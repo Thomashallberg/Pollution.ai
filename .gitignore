@@ -13,3 +13,6 @@ outputs/
 # IDE
 .vscode/
 .idea/
+
+# Generated analysis data
+stockholm_*.json
