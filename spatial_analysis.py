@@ -1,40 +1,8 @@
 import json
-import os
-import time
 
-import requests
-from dotenv import load_dotenv
-from oauthlib.oauth2 import BackendApplicationClient
-from requests_oauthlib import OAuth2Session
-
+from copernicus_client import CopernicusClient
 from pollutants import POLLUTANTS
 
-
-TOKEN_URL = (
-    "https://identity.dataspace.copernicus.eu/"
-    "auth/realms/CDSE/protocol/openid-connect/token"
-)
-
-STATS_URL = "https://sh.dataspace.copernicus.eu/api/v1/statistics"
-
-load_dotenv()
-
-client_id = os.environ["COPERNICUS_CLIENT_ID"]
-client_secret = os.environ["COPERNICUS_CLIENT_SECRET"]
-
-client = BackendApplicationClient(client_id=client_id)
-oauth = OAuth2Session(client=client)
-
-token = oauth.fetch_token(
-    token_url=TOKEN_URL,
-    client_secret=client_secret,
-    include_client_id=True,
-)
-
-headers = {
-    "Authorization": f"Bearer {token['access_token']}",
-    "Content-Type": "application/json",
-}
 
 # Greater Stockholm
 MIN_LON = 17.6
@@ -48,6 +16,9 @@ POLLUTANT = "CH4"
 pollutant_config = POLLUTANTS[POLLUTANT]
 
 ANALYSIS_DATE = "2026-05-09"
+
+copernicus_client = CopernicusClient()
+
 
 evalscript = f"""
 //VERSION=3
@@ -155,40 +126,7 @@ def get_cell_value(cell):
         },
     }
 
-    max_retries = 5
-
-    for attempt in range(max_retries):
-        response = requests.post(
-            STATS_URL,
-            headers=headers,
-            data=json.dumps(payload),
-            timeout=120,
-        )
-
-        if response.status_code == 429:
-            retry_after_ms = int(
-                response.headers.get("Retry-After", "2000")
-            )
-
-            wait_seconds = retry_after_ms / 1000
-
-            print(
-                f"Rate limited. Waiting {wait_seconds:.1f}s "
-                f"(attempt {attempt + 1}/{max_retries})..."
-            )
-
-            time.sleep(wait_seconds)
-            continue
-
-        response.raise_for_status()
-        break
-
-    else:
-        raise RuntimeError(
-            "Copernicus rate limit persisted after maximum retries."
-        )
-
-    data = response.json()
+    data = copernicus_client.get_statistics(payload)
 
     if not data.get("data"):
         return None
@@ -224,8 +162,6 @@ for index, cell in enumerate(cells, start=1):
 
     if index % 8 == 0 or index == len(cells):
         print(f"Processed {index}/{len(cells)} cells")
-
-    time.sleep(0.3)
 
 
 output_file = (
@@ -279,3 +215,13 @@ if valid_results:
     )
 
 print(f"Saved {output_file}")
+print()
+print(
+    f"Copernicus API requests: "
+    f"{copernicus_client.api_requests}"
+)
+
+print(
+    f"Cache hits: "
+    f"{copernicus_client.cache_hits}"
+)
