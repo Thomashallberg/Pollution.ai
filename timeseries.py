@@ -1,33 +1,16 @@
 import json
-import os
 
-import requests
-from dotenv import load_dotenv
-from oauthlib.oauth2 import BackendApplicationClient
-from requests_oauthlib import OAuth2Session
+from copernicus_client import CopernicusClient
+from pollutants import POLLUTANTS
 
 
-TOKEN_URL = (
-    "https://identity.dataspace.copernicus.eu/"
-    "auth/realms/CDSE/protocol/openid-connect/token"
-)
+POLLUTANT = "NO2"
+pollutant_config = POLLUTANTS[POLLUTANT]
 
-STATS_URL = "https://sh.dataspace.copernicus.eu/api/v1/statistics"
+BASELINE_FROM = "2026-05-01T00:00:00Z"
+BASELINE_TO = "2026-08-11T00:00:00Z"
 
-
-load_dotenv()
-
-client_id = os.environ["COPERNICUS_CLIENT_ID"]
-client_secret = os.environ["COPERNICUS_CLIENT_SECRET"]
-
-client = BackendApplicationClient(client_id=client_id)
-oauth = OAuth2Session(client=client)
-
-token = oauth.fetch_token(
-    token_url=TOKEN_URL,
-    client_secret=client_secret,
-    include_client_id=True,
-)
+copernicus_client = CopernicusClient()
 
 
 # Greater Stockholm
@@ -45,52 +28,52 @@ geometry = {
 }
 
 
-evalscript = """
+evalscript = f"""
 //VERSION=3
 
-function setup() {
-    return {
-        input: [{
-            bands: ["NO2", "dataMask"]
-        }],
+function setup() {{
+    return {{
+        input: [{{
+            bands: ["{POLLUTANT}", "dataMask"]
+        }}],
         output: [
-            {
+            {{
                 id: "default",
-                bands: ["NO2"],
+                bands: ["{POLLUTANT}"],
                 sampleType: "FLOAT32"
-            },
-            {
+            }},
+            {{
                 id: "dataMask",
                 bands: 1
-            }
+            }}
         ],
         mosaicking: "ORBIT"
-    };
-}
+    }};
+}}
 
-function evaluatePixel(samples) {
+function evaluatePixel(samples) {{
     let validSamples = samples.filter(sample => sample.dataMask === 1);
 
-    if (validSamples.length === 0) {
-        return {
+    if (validSamples.length === 0) {{
+        return {{
             default: [0],
             dataMask: [0]
-        };
-    }
+        }};
+    }}
 
     let sum = 0;
 
-    for (let i = 0; i < validSamples.length; i++) {
-        sum += validSamples[i].NO2;
-    }
+    for (let i = 0; i < validSamples.length; i++) {{
+        sum += validSamples[i].{POLLUTANT};
+    }}
 
     let mean = sum / validSamples.length;
 
-    return {
+    return {{
         default: [mean],
         dataMask: [1]
-    };
-}
+    }};
+}}
 """
 
 
@@ -106,15 +89,15 @@ payload = {
             {
                 "type": "sentinel-5p-l2",
                 "dataFilter": {
-                    "minQa": 75
+                    "minQa": pollutant_config["min_qa"]
                 },
             }
         ],
     },
     "aggregation": {
         "timeRange": {
-            "from": "2026-05-01T00:00:00Z",
-            "to": "2026-08-11T00:00:00Z",
+            "from": BASELINE_FROM,
+            "to": BASELINE_TO,
         },
         "aggregationInterval": {
             "of": "P1D"
@@ -125,28 +108,40 @@ payload = {
     },
 }
 
-headers = {
-    "Authorization": f"Bearer {token['access_token']}",
-    "Content-Type": "application/json",
-}
 
-response = requests.post(
-    STATS_URL,
-    headers=headers,
-    data=json.dumps(payload),
-    timeout=120,
+data = copernicus_client.get_statistics(payload)
+
+output_file = (
+    f"stockholm_{POLLUTANT.lower()}_timeseries.json"
 )
 
-print("Status:", response.status_code)
+with open(
+    output_file,
+    "w",
+    encoding="utf-8",
+) as file:
+    json.dump(
+        data,
+        file,
+        indent=2,
+    )
 
-if not response.ok:
-    print(response.text)
-    raise SystemExit(1)
+print(
+    f"Saved {output_file}"
+)
 
-data = response.json()
+print(
+    f"Intervals: "
+    f"{len(data.get('data', []))}"
+)
 
-with open("stockholm_no2_timeseries.json", "w", encoding="utf-8") as file:
-    json.dump(data, file, indent=2)
+print()
+print(
+    f"Copernicus API requests: "
+    f"{copernicus_client.api_requests}"
+)
 
-print("Saved stockholm_no2_timeseries.json")
-print("Intervals:", len(data.get("data", [])))
+print(
+    f"Cache hits: "
+    f"{copernicus_client.cache_hits}"
+)
