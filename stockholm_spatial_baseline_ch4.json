@@ -1,0 +1,1026 @@
+[
+  {
+    "row": 0,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.1,
+      17.712500000000002,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1908.4757080078125,
+    "baseline_mean": 1891.2584451342386,
+    "baseline_std": 20.137358846339808,
+    "valid_observations": 7,
+    "z_score": 0.8549911140260236
+  },
+  {
+    "row": 0,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.1,
+      17.825000000000003,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1908.4757080078127,
+    "baseline_mean": 1893.263109842936,
+    "baseline_std": 19.644456591062156,
+    "valid_observations": 8,
+    "z_score": 0.7743964865792274
+  },
+  {
+    "row": 0,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.1,
+      17.937500000000004,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1908.4757080078127,
+    "baseline_mean": 1891.161915754195,
+    "baseline_std": 16.861660964092543,
+    "valid_observations": 10,
+    "z_score": 1.026814160863988
+  },
+  {
+    "row": 0,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.1,
+      18.05,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1913.1657104492188,
+    "baseline_mean": 1888.9616374578654,
+    "baseline_std": 18.979009697142494,
+    "valid_observations": 11,
+    "z_score": 1.2753074779764464
+  },
+  {
+    "row": 0,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.1,
+      18.1625,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1913.608642578125,
+    "baseline_mean": 1893.0337419993054,
+    "baseline_std": 20.47072453688062,
+    "valid_observations": 12,
+    "z_score": 1.0050890256351819
+  },
+  {
+    "row": 0,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.1,
+      18.275000000000002,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1913.608642578125,
+    "baseline_mean": 1883.2519974481495,
+    "baseline_std": 24.26331414736778,
+    "valid_observations": 14,
+    "z_score": 1.2511334991419036
+  },
+  {
+    "row": 0,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.1,
+      18.3875,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1869.9796645997064,
+    "baseline_std": 23.977869325113492,
+    "valid_observations": 12,
+    "z_score": null
+  },
+  {
+    "row": 0,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.1,
+      18.5,
+      59.1625
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1865.5932169828204,
+    "baseline_std": 23.82990183224549,
+    "valid_observations": 9,
+    "z_score": null
+  },
+  {
+    "row": 1,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.1625,
+      17.712500000000002,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1903.5250244140625,
+    "baseline_mean": 1897.033789436727,
+    "baseline_std": 17.840503088853765,
+    "valid_observations": 6,
+    "z_score": 0.3638482023184154
+  },
+  {
+    "row": 1,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.1625,
+      17.825000000000003,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1903.5250244140625,
+    "baseline_mean": 1896.5558037328972,
+    "baseline_std": 17.383394277288048,
+    "valid_observations": 6,
+    "z_score": 0.40091253583719444
+  },
+  {
+    "row": 1,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.1625,
+      17.937500000000004,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1903.5250244140625,
+    "baseline_mean": 1895.8031329556563,
+    "baseline_std": 15.458184437160309,
+    "valid_observations": 7,
+    "z_score": 0.49953417814341233
+  },
+  {
+    "row": 1,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.1625,
+      18.05,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1881.5805067078682,
+    "baseline_std": 17.03888455894596,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 1,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.1625,
+      18.1625,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1881.8642149055263,
+    "baseline_std": 13.397909142616738,
+    "valid_observations": 10,
+    "z_score": null
+  },
+  {
+    "row": 1,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.1625,
+      18.275000000000002,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1880.7875333975921,
+    "baseline_std": 22.116320533244846,
+    "valid_observations": 11,
+    "z_score": null
+  },
+  {
+    "row": 1,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.1625,
+      18.3875,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1871.5441304780684,
+    "baseline_std": 22.547383464685705,
+    "valid_observations": 13,
+    "z_score": null
+  },
+  {
+    "row": 1,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.1625,
+      18.5,
+      59.225
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1860.9367355069407,
+    "baseline_std": 23.046631749758024,
+    "valid_observations": 13,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.225,
+      17.712500000000002,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1889.4401099795384,
+    "baseline_std": 22.20927534207948,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.225,
+      17.825000000000003,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1892.5838997902595,
+    "baseline_std": 22.55028771892706,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.225,
+      17.937500000000004,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1902.7708468967016,
+    "baseline_std": 14.71064338387321,
+    "valid_observations": 5,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.225,
+      18.05,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1895.964941277075,
+    "baseline_std": 5.735250961334398,
+    "valid_observations": 3,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.225,
+      18.1625,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1881.9781736343627,
+    "baseline_std": 18.678639298445056,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.225,
+      18.275000000000002,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1878.3359205208574,
+    "baseline_std": 14.922899104026646,
+    "valid_observations": 10,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.225,
+      18.3875,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1871.3504966826913,
+    "baseline_std": 14.876650684968556,
+    "valid_observations": 11,
+    "z_score": null
+  },
+  {
+    "row": 2,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.225,
+      18.5,
+      59.2875
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1876.3863750639416,
+    "baseline_std": 24.40777734438201,
+    "valid_observations": 14,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.2875,
+      17.712500000000002,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1884.4888222023292,
+    "baseline_std": 16.076412286500556,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.2875,
+      17.825000000000003,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1886.3611934601315,
+    "baseline_std": 18.252255561114694,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.2875,
+      17.937500000000004,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1891.149752371652,
+    "baseline_std": 16.270506470489373,
+    "valid_observations": 5,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.2875,
+      18.05,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1890.6571614583336,
+    "baseline_std": 6.306095431452638,
+    "valid_observations": 5,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.2875,
+      18.1625,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1879.2520529544713,
+    "baseline_std": 14.72005138463459,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.2875,
+      18.275000000000002,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1876.3481053481867,
+    "baseline_std": 19.336459576122238,
+    "valid_observations": 9,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.2875,
+      18.3875,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1882.5418697877915,
+    "baseline_std": 17.98043562743067,
+    "valid_observations": 10,
+    "z_score": null
+  },
+  {
+    "row": 3,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.2875,
+      18.5,
+      59.35
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1877.8464225728248,
+    "baseline_std": 25.903223727892982,
+    "valid_observations": 11,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.35,
+      17.712500000000002,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1882.2781360767506,
+    "baseline_std": 14.735052881602062,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.35,
+      17.825000000000003,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1888.1939308449073,
+    "baseline_std": 11.171900387723715,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.35,
+      17.937500000000004,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1898.3022989908854,
+    "baseline_std": 14.786159737854991,
+    "valid_observations": 5,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.35,
+      18.05,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1899.2940436469185,
+    "baseline_std": 23.6808631920034,
+    "valid_observations": 4,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.35,
+      18.1625,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1870.3619702657063,
+    "baseline_std": 16.14581330640012,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.35,
+      18.275000000000002,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1863.6450487167117,
+    "baseline_std": 14.935224930834302,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.35,
+      18.3875,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1874.361649878231,
+    "baseline_std": 17.842329500707656,
+    "valid_observations": 9,
+    "z_score": null
+  },
+  {
+    "row": 4,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.35,
+      18.5,
+      59.4125
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1868.6235950215657,
+    "baseline_std": 21.590542021539793,
+    "valid_observations": 10,
+    "z_score": null
+  },
+  {
+    "row": 5,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.4125,
+      17.712500000000002,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1855.5722391780605,
+    "baseline_std": 25.783439723928776,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 5,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.4125,
+      17.825000000000003,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1868.4516573709154,
+    "baseline_std": 26.474373286060818,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 5,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.4125,
+      17.937500000000004,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1906.8975830078125,
+    "baseline_mean": 1894.626187246817,
+    "baseline_std": 12.9414296951589,
+    "valid_observations": 6,
+    "z_score": 0.9482256636286506
+  },
+  {
+    "row": 5,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.4125,
+      18.05,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1906.8975830078125,
+    "baseline_mean": 1895.937736390129,
+    "baseline_std": 20.006605672181845,
+    "valid_observations": 7,
+    "z_score": 0.5478113977586226
+  },
+  {
+    "row": 5,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.4125,
+      18.1625,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1906.8975830078125,
+    "baseline_mean": 1878.4040608984792,
+    "baseline_std": 17.799726317481287,
+    "valid_observations": 8,
+    "z_score": 1.6007842817981717
+  },
+  {
+    "row": 5,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.4125,
+      18.275000000000002,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1877.0618896484375,
+    "baseline_mean": 1873.5420593138417,
+    "baseline_std": 20.576184277685453,
+    "valid_observations": 10,
+    "z_score": 0.1710633170413905
+  },
+  {
+    "row": 5,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.4125,
+      18.3875,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1877.0618896484375,
+    "baseline_mean": 1872.8728603786892,
+    "baseline_std": 22.76272634348531,
+    "valid_observations": 11,
+    "z_score": 0.18403020826840408
+  },
+  {
+    "row": 5,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.4125,
+      18.5,
+      59.475
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1870.1424967447915,
+    "baseline_mean": 1861.825431117305,
+    "baseline_std": 26.453199921989032,
+    "valid_observations": 12,
+    "z_score": 0.3144067882907806
+  },
+  {
+    "row": 6,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.475,
+      17.712500000000002,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1891.1151578261877,
+    "baseline_std": 21.934083150905533,
+    "valid_observations": 9,
+    "z_score": null
+  },
+  {
+    "row": 6,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.475,
+      17.825000000000003,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1891.5758764478894,
+    "baseline_std": 19.250540271405438,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 6,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.475,
+      17.937500000000004,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1893.5978438765915,
+    "baseline_std": 20.40504009251398,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 6,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.475,
+      18.05,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1890.6121769980778,
+    "baseline_std": 24.13941628041026,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 6,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.475,
+      18.1625,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1889.115966796875,
+    "baseline_mean": 1882.6260140693648,
+    "baseline_std": 10.92602873918383,
+    "valid_observations": 7,
+    "z_score": 0.5939900839026138
+  },
+  {
+    "row": 6,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.475,
+      18.275000000000002,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1889.7370062934028,
+    "baseline_mean": 1883.6194159425334,
+    "baseline_std": 12.312322483120516,
+    "valid_observations": 9,
+    "z_score": 0.49686729366099214
+  },
+  {
+    "row": 6,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.475,
+      18.3875,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1890.0475260416665,
+    "baseline_mean": 1882.2969793138245,
+    "baseline_std": 13.88373755710443,
+    "valid_observations": 9,
+    "z_score": 0.5582464157049677
+  },
+  {
+    "row": 6,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.475,
+      18.5,
+      59.5375
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1872.1744181315105,
+    "baseline_mean": 1873.4165273030596,
+    "baseline_std": 17.988074739546196,
+    "valid_observations": 12,
+    "z_score": -0.06905181291127332
+  },
+  {
+    "row": 7,
+    "col": 0,
+    "bbox": [
+      17.6,
+      59.5375,
+      17.712500000000002,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1881.8594313121978,
+    "baseline_std": 19.984611861800985,
+    "valid_observations": 8,
+    "z_score": null
+  },
+  {
+    "row": 7,
+    "col": 1,
+    "bbox": [
+      17.712500000000002,
+      59.5375,
+      17.825000000000003,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1881.8991744429977,
+    "baseline_std": 20.28436455299907,
+    "valid_observations": 6,
+    "z_score": null
+  },
+  {
+    "row": 7,
+    "col": 2,
+    "bbox": [
+      17.825000000000003,
+      59.5375,
+      17.937500000000004,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1902.1194835844492,
+    "baseline_std": 22.62180703193395,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 7,
+    "col": 3,
+    "bbox": [
+      17.9375,
+      59.5375,
+      18.05,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": null,
+    "baseline_mean": 1893.9004207436553,
+    "baseline_std": 24.49592797650795,
+    "valid_observations": 7,
+    "z_score": null
+  },
+  {
+    "row": 7,
+    "col": 4,
+    "bbox": [
+      18.05,
+      59.5375,
+      18.1625,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1892.563525390625,
+    "baseline_mean": 1881.6133831448024,
+    "baseline_std": 15.555961527866577,
+    "valid_observations": 8,
+    "z_score": 0.7039193447609694
+  },
+  {
+    "row": 7,
+    "col": 5,
+    "bbox": [
+      18.1625,
+      59.5375,
+      18.275000000000002,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1892.454711914062,
+    "baseline_mean": 1883.9205816111332,
+    "baseline_std": 17.237855723914176,
+    "valid_observations": 9,
+    "z_score": 0.49508073623619947
+  },
+  {
+    "row": 7,
+    "col": 6,
+    "bbox": [
+      18.275,
+      59.5375,
+      18.3875,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1892.454711914062,
+    "baseline_mean": 1876.9979663685854,
+    "baseline_std": 16.151820177110416,
+    "valid_observations": 8,
+    "z_score": 0.9569661732230796
+  },
+  {
+    "row": 7,
+    "col": 7,
+    "bbox": [
+      18.3875,
+      59.5375,
+      18.5,
+      59.6
+    ],
+    "pollutant": "CH4",
+    "observed_value": 1874.0034925672744,
+    "baseline_mean": 1874.8550161924695,
+    "baseline_std": 13.6107369136217,
+    "valid_observations": 9,
+    "z_score": -0.06256263937795346
+  }
+]
