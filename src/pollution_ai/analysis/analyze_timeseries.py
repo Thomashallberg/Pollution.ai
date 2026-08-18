@@ -14,6 +14,48 @@ INPUT_FILE = f"stockholm_{POLLUTANT.lower()}_timeseries.json"
 ANOMALY_THRESHOLD = 1.5
 
 
+def calculate_z_scores(values):
+    values = np.asarray(values, dtype=float)
+
+    if len(values) == 0:
+        raise ValueError("Values cannot be empty.")
+
+    mean = float(np.mean(values))
+    std = float(np.std(values))
+
+    if std == 0:
+        z_scores = np.zeros_like(values)
+    else:
+        z_scores = (values - mean) / std
+
+    return mean, std, z_scores
+
+
+def detect_anomalies(
+    dates,
+    values,
+    z_scores,
+    threshold=ANOMALY_THRESHOLD,
+):
+    anomalies = []
+
+    for date, value, z_score in zip(
+        dates,
+        values,
+        z_scores,
+    ):
+        if z_score >= threshold:
+            anomalies.append(
+                {
+                    "date": date,
+                    "value": float(value),
+                    "z_score": float(z_score),
+                }
+            )
+
+    return anomalies
+
+
 with open(INPUT_FILE, encoding="utf-8") as file:
     data = json.load(file)
 
@@ -41,30 +83,13 @@ if len(values) == 0:
         f"No valid {POLLUTANT} observations found."
     )
 
-mean = float(np.mean(values))
-std = float(np.std(values))
+mean, std, z_scores = calculate_z_scores(values)
 
-if std == 0:
-    z_scores = np.zeros_like(values)
-else:
-    z_scores = (values - mean) / std
-
-
-anomalies = []
-
-for date, value, z_score in zip(
+anomalies = detect_anomalies(
     dates,
     values,
     z_scores,
-):
-    if z_score >= ANOMALY_THRESHOLD:
-        anomalies.append(
-            {
-                "date": date,
-                "value": float(value),
-                "z_score": float(z_score),
-            }
-        )
+)
 
 
 print()
