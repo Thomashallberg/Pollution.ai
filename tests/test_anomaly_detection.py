@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pollution_ai.analysis.analyze_timeseries import (
+from pollution_ai.analysis.anomaly_detector import (
     calculate_z_scores,
     detect_anomalies,
 )
