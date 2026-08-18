@@ -3,8 +3,12 @@ from pathlib import Path
 
 import numpy as np
 
-from pollution_ai.integrations.copernicus_client import CopernicusClient
+from pollution_ai.analysis.spatial_anomaly_detector import (
+    calculate_spatial_z_score,
+    find_strongest_spatial_anomaly,
+)
 from pollution_ai.config.pollutants import POLLUTANTS
+from pollution_ai.integrations.copernicus_client import CopernicusClient
 
 
 POLLUTANT = "CH4"
@@ -164,7 +168,6 @@ for cell in spatial_cells:
         continue
 
     history = get_cell_history(cell)
-
     observed = cell["value"]
 
     if history:
@@ -176,12 +179,11 @@ for cell in spatial_cells:
         mean = float(np.mean(values))
         std = float(np.std(values))
 
-        if observed is not None and std > 0:
-            z_score = float(
-                (observed - mean) / std
-            )
-        else:
-            z_score = None
+        z_score = calculate_spatial_z_score(
+            observed,
+            mean,
+            std,
+        )
 
         result = {
             "row": cell["row"],
@@ -209,7 +211,6 @@ for cell in spatial_cells:
         }
 
     results.append(result)
-
     save_results(results)
 
     if (
@@ -228,18 +229,15 @@ valid_results = [
     if result["z_score"] is not None
 ]
 
+strongest = find_strongest_spatial_anomaly(results)
+
 print()
 print(
     f"Valid {POLLUTANT} baseline cells: "
     f"{len(valid_results)}/{len(results)}"
 )
 
-if valid_results:
-    strongest = max(
-        valid_results,
-        key=lambda result: result["z_score"],
-    )
-
+if strongest is not None:
     center_lon = (
         strongest["bbox"][0]
         + strongest["bbox"][2]
@@ -285,6 +283,7 @@ print(
     f"Copernicus API requests: "
     f"{copernicus_client.api_requests}"
 )
+
 print(
     f"Cache hits: "
     f"{copernicus_client.cache_hits}"
