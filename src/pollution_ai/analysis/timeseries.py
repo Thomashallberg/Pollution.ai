@@ -1,7 +1,7 @@
 import json
 
-from copernicus_client import CopernicusClient
-from pollutants import POLLUTANTS
+from pollution_ai.integrations.copernicus_client import CopernicusClient
+from pollution_ai.config.pollutants import POLLUTANTS
 
 
 POLLUTANT = "NO2"
