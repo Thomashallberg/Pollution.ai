@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from pollution_ai.analysis.spatial_anomaly_detector import (
     build_anomaly_result,
     find_strongest_spatial_anomaly,
@@ -39,3 +42,24 @@ class AnalysisService:
             return None
 
         return anomaly_result.to_dict()
+
+    @staticmethod
+    def load_spatial_anomaly_response(
+        file_path,
+        pollutant,
+        date,
+        unit,
+    ):
+        path = Path(file_path)
+
+        with path.open(
+            encoding="utf-8",
+        ) as file:
+            results = json.load(file)
+
+        return AnalysisService.build_spatial_anomaly_response(
+            results=results,
+            pollutant=pollutant,
+            date=date,
+            unit=unit,
+        )

@@ -1,7 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 
-from pollution_ai.services.analysis_service import AnalysisService
-
+from pollution_ai.config.pollutants import POLLUTANTS
 from pollution_ai.services.analysis_service import AnalysisService
 
 
@@ -22,30 +21,29 @@ def health_check():
         "service": "pollution-ai",
     }
 
-@app.get("/api/anomalies/spatial")
-def get_spatial_anomaly():
-    results = [
-        {
-            "row": 0,
-            "col": 0,
-            "bbox": [17.90, 59.30, 18.00, 59.40],
-            "observed_value": 1900.0,
-            "baseline_mean": 1880.0,
-            "z_score": 1.2,
-        },
-        {
-            "row": 1,
-            "col": 1,
-            "bbox": [18.00, 59.40, 18.10, 59.50],
-            "observed_value": 1950.0,
-            "baseline_mean": 1880.0,
-            "z_score": 3.48,
-        },
-    ]
 
-    return AnalysisService.build_spatial_anomaly_response(
-        results=results,
-        pollutant="CH4",
+@app.get("/api/anomalies/spatial")
+def get_spatial_anomaly(
+    pollutant: str = Query(default="CH4"),
+):
+    pollutant = pollutant.upper()
+
+    if pollutant not in POLLUTANTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported pollutant: {pollutant}",
+        )
+
+    pollutant_config = POLLUTANTS[pollutant]
+
+    file_path = (
+        f"stockholm_spatial_baseline_"
+        f"{pollutant.lower()}.json"
+    )
+
+    return AnalysisService.load_spatial_anomaly_response(
+        file_path=file_path,
+        pollutant=pollutant,
         date="2026-05-09",
-        unit="ppb",
+        unit=pollutant_config["unit"],
     )
