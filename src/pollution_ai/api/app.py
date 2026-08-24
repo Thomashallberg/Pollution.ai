@@ -3,6 +3,7 @@ from fastapi import FastAPI, Query
 from pollution_ai.api.schemas import (
     Pollutant,
     SpatialAnomalyResponse,
+    SpatialCellResponse,
 )
 from pollution_ai.config.pollutants import POLLUTANTS
 from pollution_ai.services.analysis_service import AnalysisService
@@ -36,7 +37,6 @@ def get_spatial_anomaly(
     ),
 ):
     pollutant_value = pollutant.value
-
     pollutant_config = POLLUTANTS[pollutant_value]
 
     file_path = (
@@ -49,4 +49,25 @@ def get_spatial_anomaly(
         pollutant=pollutant_value,
         date="2026-05-09",
         unit=pollutant_config["unit"],
+    )
+
+
+@app.get(
+    "/api/spatial/cells",
+    response_model=list[SpatialCellResponse],
+)
+def get_spatial_cells(
+    pollutant: Pollutant = Query(
+        default=Pollutant.CH4,
+    ),
+):
+    pollutant_value = pollutant.value
+
+    file_path = (
+        f"stockholm_spatial_baseline_"
+        f"{pollutant_value.lower()}.json"
+    )
+
+    return AnalysisService.load_spatial_cells(
+        file_path=file_path,
     )

@@ -18,3 +18,16 @@ class SpatialAnomalyResponse(BaseModel):
     z_score: float
     unit: str
     severity: str
+
+
+class SpatialCellResponse(BaseModel):
+    row: int
+    col: int
+    bbox: list[float]
+    pollutant: str
+    observed_value: float | None
+    baseline_mean: float | None
+    baseline_std: float | None
+    valid_observations: int
+    z_score: float | None
+    severity: str | None

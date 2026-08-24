@@ -75,3 +75,48 @@ def test_get_spatial_anomaly_rejects_unknown_pollutant():
     )
 
     assert response.status_code == 422
+
+
+def test_get_spatial_ch4_cells():
+    response = client.get(
+        "/api/spatial/cells?pollutant=CH4"
+    )
+
+    assert response.status_code == 200
+
+    cells = response.json()
+
+    assert len(cells) > 0
+
+    first_cell = cells[0]
+
+    assert first_cell["row"] == 0
+    assert first_cell["col"] == 0
+    assert first_cell["pollutant"] == "CH4"
+
+    assert len(first_cell["bbox"]) == 4
+
+    assert first_cell["observed_value"] == pytest.approx(
+        1908.4757080078125
+    )
+    assert first_cell["z_score"] == pytest.approx(
+        0.8549911140260236
+    )
+
+    assert "severity" in first_cell
+
+
+def test_get_spatial_no2_cells():
+    response = client.get(
+        "/api/spatial/cells?pollutant=NO2"
+    )
+
+    assert response.status_code == 200
+
+    cells = response.json()
+
+    assert len(cells) > 0
+    assert all(
+        cell["pollutant"] == "NO2"
+        for cell in cells
+    )
