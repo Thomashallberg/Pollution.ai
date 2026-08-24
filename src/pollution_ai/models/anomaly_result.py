@@ -11,6 +11,7 @@ class AnomalyResult:
     baseline_mean: float
     z_score: float
     unit: str
+    severity: str
 
     def to_dict(self) -> dict:
         return asdict(self)

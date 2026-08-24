@@ -97,6 +97,7 @@ def test_build_anomaly_result():
     assert result.baseline_mean == pytest.approx(1.90e-05)
     assert result.z_score == pytest.approx(3.48)
     assert result.unit == "mol/m²"
+    assert result.severity == "high"
 
 
 def test_build_anomaly_result_returns_none_without_anomaly():

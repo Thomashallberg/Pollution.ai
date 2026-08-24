@@ -1,3 +1,4 @@
+from pollution_ai.analysis.anomaly_detector import classify_severity
 from pollution_ai.models.anomaly_result import AnomalyResult
 
 
@@ -29,6 +30,7 @@ def build_anomaly_result(
         baseline_mean=strongest["baseline_mean"],
         z_score=strongest["z_score"],
         unit=unit,
+        severity=classify_severity(strongest["z_score"]),
     )
 
 def calculate_spatial_z_score(
@@ -65,3 +67,18 @@ def find_strongest_spatial_anomaly(results):
         valid_results,
         key=lambda result: result["z_score"],
     )
+    
+def classify_severity(z_score):
+    if z_score is None:
+        return None
+
+    if z_score >= 4.0:
+        return "extreme"
+
+    if z_score >= 3.0:
+        return "high"
+
+    if z_score >= 2.0:
+        return "moderate"
+
+    return "low"

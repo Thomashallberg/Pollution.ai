@@ -41,3 +41,19 @@ def detect_anomalies(
             )
 
     return anomalies
+
+
+def classify_severity(z_score):
+    if z_score is None:
+        return None
+
+    if z_score >= 4.0:
+        return "extreme"
+
+    if z_score >= 3.0:
+        return "high"
+
+    if z_score >= 2.0:
+        return "moderate"
+
+    return "low"

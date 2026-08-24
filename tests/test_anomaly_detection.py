@@ -3,6 +3,7 @@ import pytest
 
 from pollution_ai.analysis.anomaly_detector import (
     calculate_z_scores,
+    classify_severity,
     detect_anomalies,
 )
 
@@ -60,3 +61,15 @@ def test_detect_anomalies_returns_values_above_threshold():
     assert anomalies[1]["date"] == "2026-05-03"
     assert anomalies[1]["value"] == 30.0
     assert anomalies[1]["z_score"] == 2.4
+    
+def test_classify_severity():
+    assert classify_severity(1.99) == "low"
+    assert classify_severity(2.0) == "moderate"
+    assert classify_severity(2.99) == "moderate"
+    assert classify_severity(3.0) == "high"
+    assert classify_severity(3.99) == "high"
+    assert classify_severity(4.0) == "extreme"
+
+
+def test_classify_severity_returns_none_without_z_score():
+    assert classify_severity(None) is None
