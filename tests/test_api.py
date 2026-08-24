@@ -74,7 +74,4 @@ def test_get_spatial_anomaly_rejects_unknown_pollutant():
         "/api/anomalies/spatial?pollutant=banana"
     )
 
-    assert response.status_code == 400
-    assert response.json() == {
-        "detail": "Unsupported pollutant: BANANA",
-    }
+    assert response.status_code == 422

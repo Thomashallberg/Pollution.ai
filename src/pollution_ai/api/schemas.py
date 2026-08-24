@@ -1,4 +1,11 @@
+from enum import Enum
+
 from pydantic import BaseModel
+
+
+class Pollutant(str, Enum):
+    NO2 = "NO2"
+    CH4 = "CH4"
 
 
 class SpatialAnomalyResponse(BaseModel):
