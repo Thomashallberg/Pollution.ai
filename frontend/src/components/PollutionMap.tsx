@@ -80,6 +80,7 @@ function getSeverityColor(
     }
 }
 
+
 function MapLegend() {
     const items = [
         { label: "Low", color: "#22c55e" },
@@ -115,17 +116,34 @@ function MapLegend() {
 
 function formatValue(
     value: number | null,
-    digits = 2,
+    pollutant: "CH4" | "NO2",
 ) {
     if (value === null) {
         return "N/A"
     }
 
-    return value.toFixed(digits)
+    if (pollutant === "NO2") {
+        return value.toExponential(2)
+    }
+
+    return value.toFixed(2)
 }
 
 
-function getUnit(pollutant: "CH4" | "NO2") {
+function formatZScore(
+    value: number | null,
+) {
+    if (value === null) {
+        return "N/A"
+    }
+
+    return value.toFixed(2)
+}
+
+
+function getUnit(
+    pollutant: "CH4" | "NO2",
+) {
     if (pollutant === "CH4") {
         return "ppb"
     }
@@ -137,7 +155,8 @@ function getUnit(pollutant: "CH4" | "NO2") {
 function PollutionMap({
     pollutant,
 }: PollutionMapProps) {
-    const [cells, setCells] = useState<SpatialCell[]>([])
+    const [cells, setCells] =
+        useState<SpatialCell[]>([])
 
     useEffect(() => {
         fetch(
@@ -168,7 +187,6 @@ function PollutionMap({
             zoom={10}
             scrollWheelZoom={true}
             className="pollution-map"
-
         >
             <MapResizer />
             <MapLegend />
@@ -219,6 +237,7 @@ function PollutionMap({
                                     <strong>
                                         {formatValue(
                                             cell.observed_value,
+                                            pollutant,
                                         )}{" "}
                                         {unit}
                                     </strong>
@@ -229,6 +248,7 @@ function PollutionMap({
                                     <strong>
                                         {formatValue(
                                             cell.baseline_mean,
+                                            pollutant,
                                         )}{" "}
                                         {unit}
                                     </strong>
@@ -237,7 +257,7 @@ function PollutionMap({
                                 <div>
                                     Z-score:{" "}
                                     <strong>
-                                        {formatValue(
+                                        {formatZScore(
                                             cell.z_score,
                                         )}
                                     </strong>
