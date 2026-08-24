@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 
 from pollution_ai.analysis.spatial_anomaly_detector import (
+    build_anomaly_result,
     calculate_spatial_z_score,
     find_strongest_spatial_anomaly,
 )
@@ -231,23 +232,20 @@ valid_results = [
 
 strongest = find_strongest_spatial_anomaly(results)
 
+anomaly_result = build_anomaly_result(
+    strongest=strongest,
+    pollutant=POLLUTANT,
+    date=ANALYSIS_DATE,
+    unit=pollutant_config["unit"],
+)
+
 print()
 print(
     f"Valid {POLLUTANT} baseline cells: "
     f"{len(valid_results)}/{len(results)}"
 )
 
-if strongest is not None:
-    center_lon = (
-        strongest["bbox"][0]
-        + strongest["bbox"][2]
-    ) / 2
-
-    center_lat = (
-        strongest["bbox"][1]
-        + strongest["bbox"][3]
-    ) / 2
-
+if anomaly_result is not None:
     print(
         f"Strongest {POLLUTANT} spatial anomaly: "
         f"row={strongest['row']} "
@@ -256,24 +254,25 @@ if strongest is not None:
 
     print(
         f"Observed {POLLUTANT}: "
-        f"{strongest['observed_value']:.2e} "
-        f"{pollutant_config['unit']}"
+        f"{anomaly_result.observed_value:.2e} "
+        f"{anomaly_result.unit}"
     )
 
     print(
         f"Baseline mean: "
-        f"{strongest['baseline_mean']:.2e} "
-        f"{pollutant_config['unit']}"
+        f"{anomaly_result.baseline_mean:.2e} "
+        f"{anomaly_result.unit}"
     )
 
     print(
         f"Z-score: "
-        f"{strongest['z_score']:.2f}"
+        f"{anomaly_result.z_score:.2f}"
     )
 
     print(
         f"Approximate center: "
-        f"{center_lat:.4f}, {center_lon:.4f}"
+        f"{anomaly_result.latitude:.4f}, "
+        f"{anomaly_result.longitude:.4f}"
     )
 
 print(f"Saved {OUTPUT_FILE}")

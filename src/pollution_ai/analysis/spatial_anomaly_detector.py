@@ -1,3 +1,36 @@
+from pollution_ai.models.anomaly_result import AnomalyResult
+
+
+def build_anomaly_result(
+    strongest,
+    pollutant,
+    date,
+    unit,
+):
+    if strongest is None:
+        return None
+
+    center_lon = (
+        strongest["bbox"][0]
+        + strongest["bbox"][2]
+    ) / 2
+
+    center_lat = (
+        strongest["bbox"][1]
+        + strongest["bbox"][3]
+    ) / 2
+
+    return AnomalyResult(
+        pollutant=pollutant,
+        date=date,
+        latitude=center_lat,
+        longitude=center_lon,
+        observed_value=strongest["observed_value"],
+        baseline_mean=strongest["baseline_mean"],
+        z_score=strongest["z_score"],
+        unit=unit,
+    )
+
 def calculate_spatial_z_score(
     observed_value,
     baseline_mean,
