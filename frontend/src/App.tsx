@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 
 import "./App.css"
 
+import AnalysisDatePicker from "./components/AnalysisDatePicker"
 import AnalysisSummary from "./components/AnalysisSummary"
 import PollutionMap from "./components/PollutionMap"
 
@@ -161,32 +162,16 @@ function App() {
             </select>
           </div>
 
-          <div>
-            <label htmlFor="analysis-date">
+          <div className="date-control">
+            <label>
               Analysis date
             </label>
 
-            <select
-              id="analysis-date"
-              value={analysisDate}
-              onChange={(event) =>
-                setAnalysisDate(
-                  event.target.value,
-                )
-              }
-              disabled={
-                availableDates.length === 0
-              }
-            >
-              {availableDates.map((date) => (
-                <option
-                  key={date}
-                  value={date}
-                >
-                  {date}
-                </option>
-              ))}
-            </select>
+            <AnalysisDatePicker
+              availableDates={availableDates}
+              selectedDate={analysisDate}
+              onDateChange={setAnalysisDate}
+            />
           </div>
         </section>
 

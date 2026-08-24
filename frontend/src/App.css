@@ -334,3 +334,83 @@ body {
 .analysis-error span {
   color: #cbd5e1;
 }
+
+.date-control {
+  position: relative;
+}
+
+.date-control {
+  position: relative;
+}
+
+.date-picker-wrapper {
+  position: relative;
+}
+
+.date-picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  min-width: 190px;
+  padding: 11px 14px;
+
+  background: #111827;
+  color: #f8fafc;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-family: inherit;
+
+  cursor: pointer;
+}
+
+.date-picker-trigger:hover {
+  border-color: #475569;
+}
+
+.date-picker-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.date-picker-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2000;
+
+  padding: 12px;
+
+  background: #111827;
+  color: #e5e7eb;
+
+  border: 1px solid #334155;
+  border-radius: 10px;
+
+  box-shadow:
+    0 20px 40px
+    rgba(0, 0, 0, 0.35);
+}
+
+.date-picker-popover .rdp-root {
+  --rdp-accent-color: #3b82f6;
+  --rdp-accent-background-color: #1e3a8a;
+}
+
+.date-picker-popover button {
+  color: inherit;
+}
+
+.date-picker-popover button:disabled {
+  color: #475569;
+  opacity: 0.35;
+}
+
+.date-picker-popover .rdp-selected button {
+  background: #2563eb;
+  color: white;
+}
