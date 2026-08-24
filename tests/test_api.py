@@ -146,3 +146,16 @@ def test_get_spatial_cells_returns_404_for_unavailable_date():
             "for 2026-05-10."
         )
     }
+    
+def test_get_available_analysis_dates():
+    response = client.get(
+        "/api/analysis/dates"
+    )
+
+    assert response.status_code == 200
+
+    assert response.json() == {
+        "dates": [
+            "2026-05-09",
+        ]
+    }

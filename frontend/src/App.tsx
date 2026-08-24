@@ -26,8 +26,11 @@ function App() {
   const [pollutant, setPollutant] =
     useState<Pollutant>("CH4")
 
+  const [availableDates, setAvailableDates] =
+    useState<string[]>([])
+
   const [analysisDate, setAnalysisDate] =
-    useState("2026-05-09")
+    useState("")
 
   const [cells, setCells] =
     useState<SpatialCell[]>([])
@@ -36,6 +39,46 @@ function App() {
     useState<string | null>(null)
 
   useEffect(() => {
+    const loadAvailableDates = async () => {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/analysis/dates",
+        )
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to load available analysis dates",
+          )
+        }
+
+        const data: {
+          dates: string[]
+        } = await response.json()
+
+        setAvailableDates(data.dates)
+
+        if (data.dates.length > 0) {
+          setAnalysisDate(data.dates[0])
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message)
+        } else {
+          setError(
+            "Failed to load available analysis dates",
+          )
+        }
+      }
+    }
+
+    loadAvailableDates()
+  }, [])
+
+  useEffect(() => {
+    if (!analysisDate) {
+      return
+    }
+
     const loadCells = async () => {
       setError(null)
 
@@ -123,22 +166,36 @@ function App() {
               Analysis date
             </label>
 
-            <input
+            <select
               id="analysis-date"
-              type="date"
               value={analysisDate}
               onChange={(event) =>
                 setAnalysisDate(
                   event.target.value,
                 )
               }
-            />
+              disabled={
+                availableDates.length === 0
+              }
+            >
+              {availableDates.map((date) => (
+                <option
+                  key={date}
+                  value={date}
+                >
+                  {date}
+                </option>
+              ))}
+            </select>
           </div>
         </section>
 
         {error ? (
           <section className="analysis-error">
-            <strong>Analysis unavailable</strong>
+            <strong>
+              Analysis unavailable
+            </strong>
+
             <span>{error}</span>
           </section>
         ) : (

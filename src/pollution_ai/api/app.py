@@ -65,6 +65,14 @@ def health_check():
         "status": "ok",
         "service": "pollution-ai",
     }
+    
+@app.get("/api/analysis/dates")
+def get_available_analysis_dates():
+    return {
+        "dates": [
+            AVAILABLE_ANALYSIS_DATE.isoformat(),
+        ]
+    }
 
 
 @app.get(
