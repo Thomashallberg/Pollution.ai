@@ -20,3 +20,22 @@ class AnalysisService:
             date=date,
             unit=unit,
         )
+
+    @staticmethod
+    def build_spatial_anomaly_response(
+        results,
+        pollutant,
+        date,
+        unit,
+    ):
+        anomaly_result = AnalysisService.build_spatial_anomaly_result(
+            results=results,
+            pollutant=pollutant,
+            date=date,
+            unit=unit,
+        )
+
+        if anomaly_result is None:
+            return None
+
+        return anomaly_result.to_dict()

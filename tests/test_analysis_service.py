@@ -72,3 +72,53 @@ def test_build_spatial_anomaly_result_returns_none_without_anomaly():
     )
 
     assert result is None
+    
+    
+def test_build_spatial_anomaly_response_returns_dict():
+    results = [
+        {
+            "row": 0,
+            "col": 0,
+            "bbox": [
+                17.90,
+                59.30,
+                18.00,
+                59.40,
+            ],
+            "observed_value": 1900.0,
+            "baseline_mean": 1880.0,
+            "z_score": 1.2,
+        },
+        {
+            "row": 1,
+            "col": 1,
+            "bbox": [
+                18.00,
+                59.40,
+                18.10,
+                59.50,
+            ],
+            "observed_value": 1950.0,
+            "baseline_mean": 1880.0,
+            "z_score": 3.48,
+        },
+    ]
+
+    response = AnalysisService.build_spatial_anomaly_response(
+        results=results,
+        pollutant="CH4",
+        date="2026-05-09",
+        unit="ppb",
+    )
+
+    assert response == {
+        "pollutant": "CH4",
+        "date": "2026-05-09",
+        "latitude": 59.45,
+        "longitude": 18.05,
+        "observed_value": 1950.0,
+        "baseline_mean": 1880.0,
+        "z_score": 3.48,
+        "unit": "ppb",
+        "severity": "high",
+    }
