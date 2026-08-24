@@ -120,3 +120,29 @@ def test_get_spatial_no2_cells():
         cell["pollutant"] == "NO2"
         for cell in cells
     )
+    
+def test_get_spatial_cells_accepts_available_date():
+    response = client.get(
+        "/api/spatial/cells"
+        "?pollutant=NO2"
+        "&date=2026-05-09"
+    )
+
+    assert response.status_code == 200
+
+
+def test_get_spatial_cells_returns_404_for_unavailable_date():
+    response = client.get(
+        "/api/spatial/cells"
+        "?pollutant=NO2"
+        "&date=2026-05-10"
+    )
+
+    assert response.status_code == 404
+
+    assert response.json() == {
+        "detail": (
+            "No cached analysis data available "
+            "for 2026-05-10."
+        )
+    }

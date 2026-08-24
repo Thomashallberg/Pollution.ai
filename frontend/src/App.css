@@ -299,3 +299,38 @@ body {
     width: 100%;
   }
 }
+
+.controls input[type="date"] {
+  min-width: 180px;
+  padding: 10px 14px;
+
+  background: #111827;
+  color: #f8fafc;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.analysis-error {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  margin-bottom: 24px;
+  padding: 18px 20px;
+
+  background: rgba(127, 29, 29, 0.18);
+  border: 1px solid #7f1d1d;
+  border-radius: 10px;
+}
+
+.analysis-error strong {
+  color: #fca5a5;
+}
+
+.analysis-error span {
+  color: #cbd5e1;
+}

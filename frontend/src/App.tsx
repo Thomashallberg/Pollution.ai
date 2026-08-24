@@ -26,35 +26,61 @@ function App() {
   const [pollutant, setPollutant] =
     useState<Pollutant>("CH4")
 
+  const [analysisDate, setAnalysisDate] =
+    useState("2026-05-09")
+
   const [cells, setCells] =
     useState<SpatialCell[]>([])
 
+  const [error, setError] =
+    useState<string | null>(null)
+
   useEffect(() => {
-    fetch(
-      `http://127.0.0.1:8000/api/spatial/cells?pollutant=${pollutant}`,
-    )
-      .then((response) => {
+    const loadCells = async () => {
+      setError(null)
+
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/spatial/cells` +
+          `?pollutant=${pollutant}` +
+          `&date=${analysisDate}`,
+        )
+
         if (!response.ok) {
+          const data = await response.json()
+
           throw new Error(
+            data.detail ??
             "Failed to fetch spatial cells",
           )
         }
 
-        return response.json()
-      })
-      .then((data: SpatialCell[]) => {
+        const data: SpatialCell[] =
+          await response.json()
+
         setCells(data)
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }, [pollutant])
+      } catch (error) {
+        setCells([])
+
+        if (error instanceof Error) {
+          setError(error.message)
+        } else {
+          setError(
+            "Failed to fetch spatial cells",
+          )
+        }
+      }
+    }
+
+    loadCells()
+  }, [pollutant, analysisDate])
 
   return (
     <div className="app">
       <header className="header">
         <div>
           <h1>Pollution.ai</h1>
+
           <p>
             Satellite-based pollution anomaly detection
           </p>
@@ -92,23 +118,44 @@ function App() {
             </select>
           </div>
 
-          <div className="analysis-info">
-            <span>Analysis date</span>
-            <strong>2026-05-09</strong>
+          <div>
+            <label htmlFor="analysis-date">
+              Analysis date
+            </label>
+
+            <input
+              id="analysis-date"
+              type="date"
+              value={analysisDate}
+              onChange={(event) =>
+                setAnalysisDate(
+                  event.target.value,
+                )
+              }
+            />
           </div>
         </section>
 
-        <AnalysisSummary
-          cells={cells}
-          pollutant={pollutant}
-        />
+        {error ? (
+          <section className="analysis-error">
+            <strong>Analysis unavailable</strong>
+            <span>{error}</span>
+          </section>
+        ) : (
+          <>
+            <AnalysisSummary
+              cells={cells}
+              pollutant={pollutant}
+            />
 
-        <section className="map-panel">
-          <PollutionMap
-            pollutant={pollutant}
-            cells={cells}
-          />
-        </section>
+            <section className="map-panel">
+              <PollutionMap
+                pollutant={pollutant}
+                cells={cells}
+              />
+            </section>
+          </>
+        )}
       </main>
     </div>
   )
