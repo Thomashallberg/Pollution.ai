@@ -1,16 +1,54 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import "./App.css"
 
+import AnalysisSummary from "./components/AnalysisSummary"
 import PollutionMap from "./components/PollutionMap"
 
 
 type Pollutant = "CH4" | "NO2"
 
+type SpatialCell = {
+  row: number
+  col: number
+  bbox: number[]
+  pollutant: string
+  observed_value: number | null
+  baseline_mean: number | null
+  baseline_std: number | null
+  valid_observations: number
+  z_score: number | null
+  severity: string | null
+}
+
 
 function App() {
   const [pollutant, setPollutant] =
     useState<Pollutant>("CH4")
+
+  const [cells, setCells] =
+    useState<SpatialCell[]>([])
+
+  useEffect(() => {
+    fetch(
+      `http://127.0.0.1:8000/api/spatial/cells?pollutant=${pollutant}`,
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "Failed to fetch spatial cells",
+          )
+        }
+
+        return response.json()
+      })
+      .then((data: SpatialCell[]) => {
+        setCells(data)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }, [pollutant])
 
   return (
     <div className="app">
@@ -60,9 +98,15 @@ function App() {
           </div>
         </section>
 
+        <AnalysisSummary
+          cells={cells}
+          pollutant={pollutant}
+        />
+
         <section className="map-panel">
           <PollutionMap
             pollutant={pollutant}
+            cells={cells}
           />
         </section>
       </main>

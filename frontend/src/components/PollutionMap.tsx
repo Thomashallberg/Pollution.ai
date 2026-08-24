@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import {
     MapContainer,
     Popup,
@@ -26,6 +26,7 @@ type SpatialCell = {
 
 type PollutionMapProps = {
     pollutant: "CH4" | "NO2"
+    cells: SpatialCell[]
 }
 
 
@@ -69,12 +70,16 @@ function getSeverityColor(
     switch (severity) {
         case "extreme":
             return "#dc2626"
+
         case "high":
             return "#f97316"
+
         case "moderate":
             return "#eab308"
+
         case "low":
             return "#22c55e"
+
         default:
             return "#64748b"
     }
@@ -83,11 +88,26 @@ function getSeverityColor(
 
 function MapLegend() {
     const items = [
-        { label: "Low", color: "#22c55e" },
-        { label: "Moderate", color: "#eab308" },
-        { label: "High", color: "#f97316" },
-        { label: "Extreme", color: "#dc2626" },
-        { label: "No anomaly", color: "#64748b" },
+        {
+            label: "Low",
+            color: "#22c55e",
+        },
+        {
+            label: "Moderate",
+            color: "#eab308",
+        },
+        {
+            label: "High",
+            color: "#f97316",
+        },
+        {
+            label: "Extreme",
+            color: "#dc2626",
+        },
+        {
+            label: "No anomaly",
+            color: "#64748b",
+        },
     ]
 
     return (
@@ -154,31 +174,8 @@ function getUnit(
 
 function PollutionMap({
     pollutant,
+    cells,
 }: PollutionMapProps) {
-    const [cells, setCells] =
-        useState<SpatialCell[]>([])
-
-    useEffect(() => {
-        fetch(
-            `http://127.0.0.1:8000/api/spatial/cells?pollutant=${pollutant}`,
-        )
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(
-                        "Failed to fetch spatial cells",
-                    )
-                }
-
-                return response.json()
-            })
-            .then((data: SpatialCell[]) => {
-                setCells(data)
-            })
-            .catch((error) => {
-                console.error(error)
-            })
-    }, [pollutant])
-
     const unit = getUnit(pollutant)
 
     return (

@@ -113,19 +113,100 @@ body {
   font-size: 13px;
 }
 
+.analysis-summary {
+  margin-bottom: 24px;
+  padding: 20px;
 
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+}
 
-.pollution-map {
-  width: 100%;
-  height: 650px;
+.summary-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 18px;
+}
+
+.summary-heading span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-heading h2 {
+  margin: 0;
+
+  color: #f8fafc;
+  font-size: 20px;
+}
+
+.summary-count {
+  padding: 7px 10px;
+
+  background: #0f172a;
+  color: #94a3b8;
+
+  border: 1px solid #334155;
+  border-radius: 999px;
+
+  font-size: 13px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.summary-card {
+  padding: 16px;
+
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+}
+
+.summary-card span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.summary-card strong {
+  color: #f8fafc;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .map-panel {
   overflow: hidden;
+
   min-height: 650px;
+
   background: #111827;
+
   border: 1px solid #1f2937;
   border-radius: 12px;
+}
+
+.pollution-map {
+  width: 100%;
+  height: 650px;
 }
 
 .map-legend {
@@ -170,4 +251,51 @@ body {
 
   border-radius: 3px;
   border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cell-popup {
+  min-width: 180px;
+}
+
+.cell-popup strong {
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    padding: 24px 20px;
+  }
+
+  .header {
+    padding: 20px;
+  }
+
+  .controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .analysis-info {
+    text-align: left;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .summary-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls select {
+    width: 100%;
+  }
 }
