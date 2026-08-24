@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import {
     MapContainer,
+    Popup,
     Rectangle,
     TileLayer,
     useMap,
@@ -79,6 +80,59 @@ function getSeverityColor(
     }
 }
 
+function MapLegend() {
+    const items = [
+        { label: "Low", color: "#22c55e" },
+        { label: "Moderate", color: "#eab308" },
+        { label: "High", color: "#f97316" },
+        { label: "Extreme", color: "#dc2626" },
+        { label: "No anomaly", color: "#64748b" },
+    ]
+
+    return (
+        <div className="map-legend">
+            <strong>Anomaly severity</strong>
+
+            {items.map((item) => (
+                <div
+                    className="legend-item"
+                    key={item.label}
+                >
+                    <span
+                        className="legend-color"
+                        style={{
+                            backgroundColor: item.color,
+                        }}
+                    />
+
+                    <span>{item.label}</span>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+
+function formatValue(
+    value: number | null,
+    digits = 2,
+) {
+    if (value === null) {
+        return "N/A"
+    }
+
+    return value.toFixed(digits)
+}
+
+
+function getUnit(pollutant: "CH4" | "NO2") {
+    if (pollutant === "CH4") {
+        return "ppb"
+    }
+
+    return "mol/m²"
+}
+
 
 function PollutionMap({
     pollutant,
@@ -106,14 +160,18 @@ function PollutionMap({
             })
     }, [pollutant])
 
+    const unit = getUnit(pollutant)
+
     return (
         <MapContainer
             center={[59.3293, 18.0686]}
             zoom={10}
             scrollWheelZoom={true}
             className="pollution-map"
+
         >
             <MapResizer />
+            <MapLegend />
 
             <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
@@ -128,6 +186,10 @@ function PollutionMap({
                     maxLat,
                 ] = cell.bbox
 
+                const color = getSeverityColor(
+                    cell.severity,
+                )
+
                 return (
                     <Rectangle
                         key={`${cell.row}-${cell.col}`}
@@ -136,16 +198,67 @@ function PollutionMap({
                             [maxLat, maxLon],
                         ]}
                         pathOptions={{
-                            color: getSeverityColor(
-                                cell.severity,
-                            ),
-                            fillColor: getSeverityColor(
-                                cell.severity,
-                            ),
+                            color,
+                            fillColor: color,
                             fillOpacity: 0.35,
                             weight: 1,
                         }}
-                    />
+                    >
+                        <Popup>
+                            <div className="cell-popup">
+                                <strong>
+                                    {pollutant === "CH4"
+                                        ? "Methane (CH₄)"
+                                        : "Nitrogen dioxide (NO₂)"}
+                                </strong>
+
+                                <hr />
+
+                                <div>
+                                    Observed:{" "}
+                                    <strong>
+                                        {formatValue(
+                                            cell.observed_value,
+                                        )}{" "}
+                                        {unit}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Baseline:{" "}
+                                    <strong>
+                                        {formatValue(
+                                            cell.baseline_mean,
+                                        )}{" "}
+                                        {unit}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Z-score:{" "}
+                                    <strong>
+                                        {formatValue(
+                                            cell.z_score,
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Severity:{" "}
+                                    <strong>
+                                        {cell.severity ?? "N/A"}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Observations:{" "}
+                                    <strong>
+                                        {cell.valid_observations}
+                                    </strong>
+                                </div>
+                            </div>
+                        </Popup>
+                    </Rectangle>
                 )
             })}
         </MapContainer>
