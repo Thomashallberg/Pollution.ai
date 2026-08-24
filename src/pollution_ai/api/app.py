@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 
+from pollution_ai.api.schemas import SpatialAnomalyResponse
 from pollution_ai.config.pollutants import POLLUTANTS
 from pollution_ai.services.analysis_service import AnalysisService
 
@@ -22,7 +23,10 @@ def health_check():
     }
 
 
-@app.get("/api/anomalies/spatial")
+@app.get(
+    "/api/anomalies/spatial",
+    response_model=SpatialAnomalyResponse,
+)
 def get_spatial_anomaly(
     pollutant: str = Query(default="CH4"),
 ):
