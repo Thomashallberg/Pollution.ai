@@ -1,6 +1,7 @@
 import argparse
 import json
 from datetime import date, timedelta
+from pathlib import Path
 
 from pollution_ai.config.pollutants import POLLUTANTS
 from pollution_ai.integrations.copernicus_client import CopernicusClient
@@ -219,11 +220,20 @@ def get_cell_value(
     return stats["mean"]
 
 
-def main():
-    args = parse_arguments()
+def run_spatial_analysis(
+    pollutant: str,
+    analysis_date: str,
+    copernicus_client=None,
+) -> Path:
+    if pollutant not in POLLUTANTS:
+        raise ValueError(
+            f"Unsupported pollutant: {pollutant}"
+        )
 
     analysis_date_value = (
-        parse_analysis_date(args.date)
+        parse_analysis_date(
+            analysis_date
+        )
     )
 
     analysis_date = (
@@ -235,15 +245,14 @@ def main():
         + timedelta(days=1)
     ).isoformat()
 
-    pollutant = args.pollutant
-
     pollutant_config = (
         POLLUTANTS[pollutant]
     )
 
-    copernicus_client = (
-        CopernicusClient()
-    )
+    if copernicus_client is None:
+        copernicus_client = (
+            CopernicusClient()
+        )
 
     evalscript = build_evalscript(
         pollutant
@@ -294,14 +303,13 @@ def main():
                 f"{index}/{len(cells)} cells"
             )
 
-    output_file = (
+    output_file = Path(
         "stockholm_spatial_"
         f"{pollutant.lower()}_"
         f"{analysis_date}.json"
     )
 
-    with open(
-        output_file,
+    with output_file.open(
         "w",
         encoding="utf-8",
     ) as file:
@@ -375,6 +383,17 @@ def main():
     print(
         "Cache hits: "
         f"{copernicus_client.cache_hits}"
+    )
+
+    return output_file
+
+
+def main():
+    args = parse_arguments()
+
+    run_spatial_analysis(
+        pollutant=args.pollutant,
+        analysis_date=args.date,
     )
 
 

@@ -87,16 +87,21 @@ def build_baseline_lookup(
     }
 
 
-def main():
-    args = parse_arguments()
+def run_spatial_baseline(
+    pollutant: str,
+    analysis_date: str,
+) -> Path:
+    if pollutant not in POLLUTANTS:
+        raise ValueError(
+            f"Unsupported pollutant: {pollutant}"
+        )
 
     analysis_date = (
         parse_analysis_date(
-            args.date
+            analysis_date
         ).isoformat()
     )
 
-    pollutant = args.pollutant
     pollutant_config = POLLUTANTS[pollutant]
 
     source_file = Path(
@@ -299,6 +304,17 @@ def main():
 
     print(
         f"Saved {output_file}"
+    )
+
+    return output_file
+
+
+def main():
+    args = parse_arguments()
+
+    run_spatial_baseline(
+        pollutant=args.pollutant,
+        analysis_date=args.date,
     )
 
 
