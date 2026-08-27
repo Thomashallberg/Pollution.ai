@@ -46,6 +46,37 @@ function getSeverityColor(
 }
 
 
+function getCoverageStatus(
+    validCells: number,
+    totalCells: number,
+) {
+    if (totalCells === 0) {
+        return "Unavailable"
+    }
+
+    if (validCells < 10) {
+        return "Unavailable"
+    }
+
+    const percentage =
+        (validCells / totalCells) * 100
+
+    if (percentage >= 75) {
+        return "Excellent"
+    }
+
+    if (percentage >= 50) {
+        return "Good"
+    }
+
+    if (percentage >= 25) {
+        return "Limited"
+    }
+
+    return "Poor"
+}
+
+
 function AnalysisSummary({
     cells,
     pollutant,
@@ -57,20 +88,20 @@ function AnalysisSummary({
 
     const strongest =
         validCells.length > 0
-            ? validCells.reduce((current, cell) =>
-                (cell.z_score ?? -Infinity) >
-                    (current.z_score ?? -Infinity)
-                    ? cell
-                    : current,
+            ? validCells.reduce(
+                (current, cell) =>
+                    (
+                        cell.z_score
+                        ?? -Infinity
+                    ) >
+                        (
+                            current.z_score
+                            ?? -Infinity
+                        )
+                        ? cell
+                        : current,
             )
             : null
-
-    const anomalousCells = validCells.filter(
-        (cell) =>
-            cell.severity === "moderate" ||
-            cell.severity === "high" ||
-            cell.severity === "extreme",
-    )
 
     const pollutantLabel =
         pollutant === "CH4"
@@ -81,70 +112,82 @@ function AnalysisSummary({
         <section className="analysis-summary">
             <div className="summary-heading">
                 <div>
-                    <span>Analysis summary</span>
+                    <span>
+                        Analysis summary
+                    </span>
 
-                    <h2>{pollutantLabel}</h2>
-                </div>
-
-                <div className="summary-count">
-                    {validCells.length} valid cells
+                    <h2>
+                        {pollutantLabel}
+                    </h2>
                 </div>
             </div>
 
             <div className="summary-grid">
                 <div className="summary-card">
-                    <span>Strongest anomaly</span>
+                    <span>
+                        Strongest anomaly
+                    </span>
 
                     <strong
                         style={{
-                            color: getSeverityColor(
-                                strongest?.severity,
-                            ),
+                            color:
+                                getSeverityColor(
+                                    strongest?.severity,
+                                ),
                         }}
                     >
-                        {strongest?.severity ?? "N/A"}
+                        {
+                            strongest?.severity
+                            ?? "N/A"
+                        }
                     </strong>
                 </div>
 
                 <div className="summary-card">
-                    <span>Highest z-score</span>
+                    <span>
+                        Highest z-score
+                    </span>
 
                     <strong>
-                        {strongest?.z_score !== null &&
-                            strongest?.z_score !== undefined
-                            ? strongest.z_score.toFixed(2)
-                            : "N/A"}
+                        {
+                            strongest?.z_score
+                                !== null &&
+                                strongest?.z_score
+                                !== undefined
+                                ? strongest.z_score
+                                    .toFixed(2)
+                                : "N/A"
+                        }
                     </strong>
                 </div>
 
                 <div className="summary-card">
-                    <span>Anomalous cells</span>
+                    <span>
+                        Satellite coverage
+                    </span>
 
                     <strong>
-                        {anomalousCells.length} / {validCells.length}
-                    </strong>
-                </div>
-
-                <div className="summary-card">
-                    <span>Observations</span>
-
-                    <strong>
-                        {strongest?.valid_observations ?? "N/A"}
-                    </strong>
-                </div>
-
-                <div className="summary-card">
-                    <span>Satellite coverage</span>
-
-                    <strong>
-                        {coverage
-                            ? `${coverage.valid_cells} / ${coverage.total_cells}`
-                            : "N/A"}
+                        {
+                            coverage
+                                ? `${coverage.valid_cells} / ${coverage.total_cells}`
+                                : "N/A"
+                        }
                     </strong>
 
                     {coverage && (
                         <small>
-                            {coverage.coverage_percent.toFixed(2)}%
+                            {
+                                coverage
+                                    .coverage_percent
+                                    .toFixed(2)
+                            }
+                            {"% · "}
+                            {
+                                getCoverageStatus(
+                                    coverage.valid_cells,
+                                    coverage.total_cells,
+                                )
+                            }
                         </small>
                     )}
                 </div>

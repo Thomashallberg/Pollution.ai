@@ -2,6 +2,7 @@ import pytest
 
 from pollution_ai.analysis.spatial_anomaly_detector import (
     build_anomaly_result,
+    calculate_deviation_percent,
     calculate_spatial_z_score,
     find_strongest_spatial_anomaly,
 )
@@ -98,6 +99,14 @@ def test_build_anomaly_result():
     assert result.z_score == pytest.approx(3.48)
     assert result.unit == "mol/m²"
     assert result.severity == "high"
+    assert result.deviation_percent == pytest.approx(
+    (
+        result.observed_value
+        - result.baseline_mean
+    )
+    / result.baseline_mean
+    * 100
+)
 
 
 def test_build_anomaly_result_returns_none_without_anomaly():
@@ -106,6 +115,35 @@ def test_build_anomaly_result_returns_none_without_anomaly():
         pollutant="NO2",
         date="2026-05-09",
         unit="mol/m²",
+    )
+
+    assert result is None
+    
+def test_calculate_deviation_percent():
+    result = calculate_deviation_percent(
+        observed_value=1910.0,
+        baseline_mean=1878.0,
+    )
+
+    assert result == pytest.approx(
+        1.7039,
+        rel=0.001,
+    )
+
+
+def test_calculate_deviation_percent_returns_none_for_zero_baseline():
+    result = calculate_deviation_percent(
+        observed_value=1910.0,
+        baseline_mean=0.0,
+    )
+
+    assert result is None
+
+
+def test_calculate_deviation_percent_returns_none_without_observation():
+    result = calculate_deviation_percent(
+        observed_value=None,
+        baseline_mean=1878.0,
     )
 
     assert result is None

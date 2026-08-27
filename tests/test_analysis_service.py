@@ -112,16 +112,19 @@ def test_build_spatial_anomaly_response_returns_dict():
     )
 
     assert response == {
-        "pollutant": "CH4",
-        "date": "2026-05-09",
-        "latitude": 59.45,
-        "longitude": 18.05,
-        "observed_value": 1950.0,
-        "baseline_mean": 1880.0,
-        "z_score": 3.48,
-        "unit": "ppb",
-        "severity": "high",
-    }
+    "pollutant": "CH4",
+    "date": "2026-05-09",
+    "latitude": 59.45,
+    "longitude": 18.05,
+    "observed_value": 1950.0,
+    "baseline_mean": 1880.0,
+    "z_score": 3.48,
+    "deviation_percent": pytest.approx(
+        3.723404255319149
+    ),
+    "unit": "ppb",
+    "severity": "high",
+}
     
 def test_calculate_coverage():
     results = [

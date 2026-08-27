@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import "./App.css"
 
 import AnalysisDatePicker from "./components/AnalysisDatePicker"
+import AnalysisDetails from "./components/AnalysisDetails"
 import AnalysisSummary from "./components/AnalysisSummary"
 import PollutionMap from "./components/PollutionMap"
 
@@ -30,6 +31,19 @@ type Coverage = {
   coverage_percent: number
 }
 
+type SpatialAnomaly = {
+  pollutant: string
+  date: string
+  latitude: number
+  longitude: number
+  observed_value: number
+  baseline_mean: number
+  z_score: number
+  deviation_percent: number | null
+  unit: string
+  severity: string
+}
+
 
 function App() {
   const [pollutant, setPollutant] =
@@ -47,6 +61,9 @@ function App() {
   const [coverage, setCoverage] =
     useState<Coverage | null>(null)
 
+  const [anomaly, setAnomaly] =
+    useState<SpatialAnomaly | null>(null)
+
   const [error, setError] =
     useState<string | null>(null)
 
@@ -57,6 +74,7 @@ function App() {
       setAnalysisDate("")
       setCells([])
       setCoverage(null)
+      setAnomaly(null)
 
       try {
         const response = await fetch(
@@ -101,11 +119,13 @@ function App() {
     const loadAnalysis = async () => {
       setError(null)
       setCoverage(null)
+      setAnomaly(null)
 
       try {
         const [
           cellsResponse,
           coverageResponse,
+          anomalyResponse,
         ] = await Promise.all([
           fetch(
             `http://127.0.0.1:8000/api/spatial/cells` +
@@ -115,6 +135,12 @@ function App() {
 
           fetch(
             `http://127.0.0.1:8000/api/analysis/coverage` +
+            `?pollutant=${pollutant}` +
+            `&date=${analysisDate}`,
+          ),
+
+          fetch(
+            `http://127.0.0.1:8000/api/anomalies/spatial` +
             `?pollutant=${pollutant}` +
             `&date=${analysisDate}`,
           ),
@@ -140,17 +166,32 @@ function App() {
           )
         }
 
+        if (!anomalyResponse.ok) {
+          const data =
+            await anomalyResponse.json()
+
+          throw new Error(
+            data.detail ??
+            "Failed to fetch spatial anomaly",
+          )
+        }
+
         const cellsData: SpatialCell[] =
           await cellsResponse.json()
 
         const coverageData: Coverage =
           await coverageResponse.json()
 
+        const anomalyData: SpatialAnomaly =
+          await anomalyResponse.json()
+
         setCells(cellsData)
         setCoverage(coverageData)
+        setAnomaly(anomalyData)
       } catch (error) {
         setCells([])
         setCoverage(null)
+        setAnomaly(null)
 
         if (error instanceof Error) {
           setError(error.message)
@@ -169,7 +210,9 @@ function App() {
     <div className="app">
       <header className="header">
         <div>
-          <h1>Pollution.ai</h1>
+          <h1>
+            Pollution.ai
+          </h1>
 
           <p>
             Satellite-based pollution anomaly detection
@@ -178,6 +221,7 @@ function App() {
 
         <div className="status">
           <span className="status-dot" />
+
           API connected
         </div>
       </header>
@@ -227,7 +271,9 @@ function App() {
               Analysis unavailable
             </strong>
 
-            <span>{error}</span>
+            <span>
+              {error}
+            </span>
           </section>
         ) : (
           <>
@@ -241,8 +287,15 @@ function App() {
               <PollutionMap
                 pollutant={pollutant}
                 cells={cells}
+                anomaly={anomaly}
               />
             </section>
+
+            <AnalysisDetails
+              cells={cells}
+              pollutant={pollutant}
+              anomaly={anomaly}
+            />
           </>
         )}
       </main>

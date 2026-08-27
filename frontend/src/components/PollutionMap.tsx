@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import {
+    CircleMarker,
     MapContainer,
     Popup,
     Rectangle,
@@ -24,9 +25,24 @@ type SpatialCell = {
 }
 
 
+type SpatialAnomaly = {
+    pollutant: string
+    date: string
+    latitude: number
+    longitude: number
+    observed_value: number
+    baseline_mean: number
+    z_score: number
+    deviation_percent: number | null
+    unit: string
+    severity: string
+}
+
+
 type PollutionMapProps = {
     pollutant: "CH4" | "NO2"
     cells: SpatialCell[]
+    anomaly: SpatialAnomaly | null
 }
 
 
@@ -112,7 +128,9 @@ function MapLegend() {
 
     return (
         <div className="map-legend">
-            <strong>Anomaly severity</strong>
+            <strong>
+                Anomaly severity
+            </strong>
 
             {items.map((item) => (
                 <div
@@ -122,11 +140,14 @@ function MapLegend() {
                     <span
                         className="legend-color"
                         style={{
-                            backgroundColor: item.color,
+                            backgroundColor:
+                                item.color,
                         }}
                     />
 
-                    <span>{item.label}</span>
+                    <span>
+                        {item.label}
+                    </span>
                 </div>
             ))}
         </div>
@@ -161,6 +182,22 @@ function formatZScore(
 }
 
 
+function formatDeviation(
+    value: number | null,
+) {
+    if (value === null) {
+        return "N/A"
+    }
+
+    const prefix =
+        value > 0
+            ? "+"
+            : ""
+
+    return `${prefix}${value.toFixed(2)}%`
+}
+
+
 function getUnit(
     pollutant: "CH4" | "NO2",
 ) {
@@ -172,20 +209,49 @@ function getUnit(
 }
 
 
+function getPollutantLabel(
+    pollutant: "CH4" | "NO2",
+) {
+    if (pollutant === "CH4") {
+        return "Methane (CH₄)"
+    }
+
+    return "Nitrogen dioxide (NO₂)"
+}
+
+
 function PollutionMap({
     pollutant,
     cells,
+    anomaly,
 }: PollutionMapProps) {
-    const unit = getUnit(pollutant)
+    const unit =
+        getUnit(pollutant)
+
+    const pollutantLabel =
+        getPollutantLabel(
+            pollutant
+        )
+
+    const anomalyColor =
+        anomaly
+            ? getSeverityColor(
+                anomaly.severity
+            )
+            : "#64748b"
 
     return (
         <MapContainer
-            center={[59.3293, 18.0686]}
+            center={[
+                59.3293,
+                18.0686,
+            ]}
             zoom={10}
             scrollWheelZoom={true}
             className="pollution-map"
         >
             <MapResizer />
+
             <MapLegend />
 
             <TileLayer
@@ -201,30 +267,41 @@ function PollutionMap({
                     maxLat,
                 ] = cell.bbox
 
-                const color = getSeverityColor(
-                    cell.severity,
-                )
+                const color =
+                    getSeverityColor(
+                        cell.severity
+                    )
 
                 return (
                     <Rectangle
-                        key={`${cell.row}-${cell.col}`}
+                        key={
+                            `${cell.row}-${cell.col}`
+                        }
                         bounds={[
-                            [minLat, minLon],
-                            [maxLat, maxLon],
+                            [
+                                minLat,
+                                minLon,
+                            ],
+                            [
+                                maxLat,
+                                maxLon,
+                            ],
                         ]}
                         pathOptions={{
                             color,
-                            fillColor: color,
-                            fillOpacity: 0.35,
+                            fillColor:
+                                color,
+                            fillOpacity:
+                                0.35,
                             weight: 1,
                         }}
                     >
                         <Popup>
                             <div className="cell-popup">
                                 <strong>
-                                    {pollutant === "CH4"
-                                        ? "Methane (CH₄)"
-                                        : "Nitrogen dioxide (NO₂)"}
+                                    {
+                                        pollutantLabel
+                                    }
                                 </strong>
 
                                 <hr />
@@ -255,7 +332,7 @@ function PollutionMap({
                                     Z-score:{" "}
                                     <strong>
                                         {formatZScore(
-                                            cell.z_score,
+                                            cell.z_score
                                         )}
                                     </strong>
                                 </div>
@@ -263,14 +340,19 @@ function PollutionMap({
                                 <div>
                                     Severity:{" "}
                                     <strong>
-                                        {cell.severity ?? "N/A"}
+                                        {
+                                            cell.severity
+                                            ?? "N/A"
+                                        }
                                     </strong>
                                 </div>
 
                                 <div>
                                     Observations:{" "}
                                     <strong>
-                                        {cell.valid_observations}
+                                        {
+                                            cell.valid_observations
+                                        }
                                     </strong>
                                 </div>
                             </div>
@@ -278,6 +360,134 @@ function PollutionMap({
                     </Rectangle>
                 )
             })}
+
+            {anomaly && (
+                <>
+                    <CircleMarker
+                        center={[
+                            anomaly.latitude,
+                            anomaly.longitude,
+                        ]}
+                        radius={18}
+                        className="anomaly-pulse"
+                        pathOptions={{
+                            color:
+                                anomalyColor,
+                            fillColor:
+                                anomalyColor,
+                            fillOpacity:
+                                0.2,
+                            weight: 4,
+                        }}
+                    />
+
+                    <CircleMarker
+                        center={[
+                            anomaly.latitude,
+                            anomaly.longitude,
+                        ]}
+                        radius={10}
+                        pathOptions={{
+                            color: "#ffffff",
+                            fillColor:
+                                anomalyColor,
+                            fillOpacity: 1,
+                            weight: 3,
+                        }}
+                    >
+                        <Popup>
+                            <div className="cell-popup">
+                                <strong>
+                                    Strongest anomaly area
+                                </strong>
+
+                                <hr />
+
+                                <div>
+                                    Pollutant:{" "}
+                                    <strong>
+                                        {
+                                            pollutantLabel
+                                        }
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Observed:{" "}
+                                    <strong>
+                                        {formatValue(
+                                            anomaly.observed_value,
+                                            pollutant,
+                                        )}{" "}
+                                        {anomaly.unit}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Baseline:{" "}
+                                    <strong>
+                                        {formatValue(
+                                            anomaly.baseline_mean,
+                                            pollutant,
+                                        )}{" "}
+                                        {anomaly.unit}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Deviation:{" "}
+                                    <strong>
+                                        {formatDeviation(
+                                            anomaly.deviation_percent
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Z-score:{" "}
+                                    <strong>
+                                        {
+                                            anomaly.z_score
+                                                .toFixed(2)
+                                        }
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Severity:{" "}
+                                    <strong>
+                                        {
+                                            anomaly.severity
+                                        }
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    Cell center:{" "}
+                                    <strong>
+                                        {anomaly.latitude.toFixed(
+                                            4
+                                        )}
+                                        {", "}
+                                        {anomaly.longitude.toFixed(
+                                            4
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <hr />
+
+                                <small>
+                                    Marker represents the
+                                    center of the strongest
+                                    anomaly grid cell, not an
+                                    exact emission source.
+                                </small>
+                            </div>
+                        </Popup>
+                    </CircleMarker>
+                </>
+            )}
         </MapContainer>
     )
 }

@@ -12,6 +12,7 @@ def test_anomaly_result_to_dict():
         z_score=1.60,
         unit="ppb",
         severity="low",
+        deviation_percent=1.7,
     )
 
     data = result.to_dict()
@@ -26,4 +27,5 @@ def test_anomaly_result_to_dict():
         "z_score": 1.60,
         "unit": "ppb",
         "severity": "low",
+        "deviation_percent": 1.7,
     }

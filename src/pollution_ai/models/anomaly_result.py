@@ -1,4 +1,7 @@
-from dataclasses import asdict, dataclass
+from dataclasses import (
+    asdict,
+    dataclass,
+)
 
 
 @dataclass
@@ -10,6 +13,7 @@ class AnomalyResult:
     observed_value: float
     baseline_mean: float
     z_score: float
+    deviation_percent: float | None
     unit: str
     severity: str
 
