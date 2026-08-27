@@ -211,7 +211,7 @@ function App() {
       <header className="header">
         <div>
           <h1>
-            Pollution.ai
+            Pollution Anomaly Detection
           </h1>
 
           <p>
