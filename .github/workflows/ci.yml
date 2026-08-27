@@ -30,6 +30,9 @@ jobs:
           pip install pytest httpx
 
       - name: Run backend tests
+        env:
+          COPERNICUS_CLIENT_ID: test-client-id
+          COPERNICUS_CLIENT_SECRET: test-client-secret
         run: pytest
 
   frontend:
