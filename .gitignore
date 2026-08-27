@@ -19,3 +19,5 @@ stockholm_*.json
 
 # Cache
 cache/*
+
+*.egg-info/
