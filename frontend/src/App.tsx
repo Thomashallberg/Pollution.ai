@@ -41,9 +41,15 @@ function App() {
 
   useEffect(() => {
     const loadAvailableDates = async () => {
+      setError(null)
+      setAvailableDates([])
+      setAnalysisDate("")
+      setCells([])
+
       try {
         const response = await fetch(
-          "http://127.0.0.1:8000/api/analysis/dates",
+          `http://127.0.0.1:8000/api/analysis/dates` +
+          `?pollutant=${pollutant}`,
         )
 
         if (!response.ok) {
@@ -73,7 +79,7 @@ function App() {
     }
 
     loadAvailableDates()
-  }, [])
+  }, [pollutant])
 
   useEffect(() => {
     if (!analysisDate) {

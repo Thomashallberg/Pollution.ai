@@ -34,13 +34,26 @@ app.add_middleware(
 )
 
 
-AVAILABLE_ANALYSIS_DATE = date(2026, 5, 9)
-
-
-def validate_analysis_date(
+def get_spatial_file_path(
+    pollutant: Pollutant,
     analysis_date: date,
-) -> None:
-    if analysis_date != AVAILABLE_ANALYSIS_DATE:
+):
+    return AnalysisService.get_spatial_file_path(
+        pollutant=pollutant.value,
+        analysis_date=analysis_date.isoformat(),
+    )
+
+
+def validate_spatial_file(
+    pollutant: Pollutant,
+    analysis_date: date,
+):
+    file_path = get_spatial_file_path(
+        pollutant=pollutant,
+        analysis_date=analysis_date,
+    )
+
+    if not file_path.exists():
         raise HTTPException(
             status_code=404,
             detail=(
@@ -49,14 +62,7 @@ def validate_analysis_date(
             ),
         )
 
-
-def get_spatial_file_path(
-    pollutant: Pollutant,
-) -> str:
-    return (
-        "stockholm_spatial_baseline_"
-        f"{pollutant.value.lower()}.json"
-    )
+    return file_path
 
 
 @app.get("/health")
@@ -65,13 +71,20 @@ def health_check():
         "status": "ok",
         "service": "pollution-ai",
     }
-    
+
+
 @app.get("/api/analysis/dates")
-def get_available_analysis_dates():
+def get_available_analysis_dates(
+    pollutant: Pollutant = Query(
+        default=Pollutant.CH4,
+    ),
+):
     return {
-        "dates": [
-            AVAILABLE_ANALYSIS_DATE.isoformat(),
-        ]
+        "dates": (
+            AnalysisService.get_available_analysis_dates(
+                pollutant.value
+            )
+        )
     }
 
 
@@ -84,21 +97,19 @@ def get_spatial_anomaly(
         default=Pollutant.CH4,
     ),
     analysis_date: date = Query(
-        default=AVAILABLE_ANALYSIS_DATE,
         alias="date",
     ),
 ):
-    validate_analysis_date(
-        analysis_date,
-    )
-
     pollutant_value = pollutant.value
     pollutant_config = POLLUTANTS[pollutant_value]
 
+    file_path = validate_spatial_file(
+        pollutant=pollutant,
+        analysis_date=analysis_date,
+    )
+
     return AnalysisService.load_spatial_anomaly_response(
-        file_path=get_spatial_file_path(
-            pollutant,
-        ),
+        file_path=file_path,
         pollutant=pollutant_value,
         date=analysis_date.isoformat(),
         unit=pollutant_config["unit"],
@@ -114,16 +125,14 @@ def get_spatial_cells(
         default=Pollutant.CH4,
     ),
     analysis_date: date = Query(
-        default=AVAILABLE_ANALYSIS_DATE,
         alias="date",
     ),
 ):
-    validate_analysis_date(
-        analysis_date,
+    file_path = validate_spatial_file(
+        pollutant=pollutant,
+        analysis_date=analysis_date,
     )
 
     return AnalysisService.load_spatial_cells(
-        file_path=get_spatial_file_path(
-            pollutant,
-        ),
+        file_path=file_path,
     )

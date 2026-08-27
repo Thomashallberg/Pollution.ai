@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 from pollution_ai.analysis.anomaly_detector import classify_severity
@@ -87,3 +88,36 @@ class AnalysisService:
             cells.append(cell)
 
         return cells
+
+    @staticmethod
+    def get_spatial_file_path(
+        pollutant: str,
+        analysis_date: str,
+    ) -> Path:
+        return Path(
+            "stockholm_spatial_baseline_"
+            f"{pollutant.lower()}_"
+            f"{analysis_date}.json"
+        )
+
+    @staticmethod
+    def get_available_analysis_dates(
+        pollutant: str,
+    ) -> list[str]:
+        pattern = re.compile(
+            rf"stockholm_spatial_baseline_"
+            rf"{pollutant.lower()}_"
+            r"(\d{4}-\d{2}-\d{2})\.json$"
+        )
+
+        dates = set()
+
+        for path in Path(".").glob(
+            "stockholm_spatial_baseline_*.json"
+        ):
+            match = pattern.fullmatch(path.name)
+
+            if match:
+                dates.add(match.group(1))
+
+        return sorted(dates)

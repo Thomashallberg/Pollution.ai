@@ -1,7 +1,9 @@
+import argparse
 import json
+from datetime import date, timedelta
 
-from pollution_ai.integrations.copernicus_client import CopernicusClient
 from pollution_ai.config.pollutants import POLLUTANTS
+from pollution_ai.integrations.copernicus_client import CopernicusClient
 
 
 # Greater Stockholm
@@ -12,26 +14,53 @@ MAX_LAT = 59.6
 
 GRID_SIZE = 8
 
-POLLUTANT = "CH4"
-pollutant_config = POLLUTANTS[POLLUTANT]
 
-ANALYSIS_DATE = "2026-05-09"
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Fetch spatial Copernicus pollution data "
+            "for Greater Stockholm."
+        )
+    )
 
-copernicus_client = CopernicusClient()
+    parser.add_argument(
+        "--pollutant",
+        choices=POLLUTANTS.keys(),
+        required=True,
+        help="Pollutant to analyse.",
+    )
+
+    parser.add_argument(
+        "--date",
+        required=True,
+        help="Analysis date in YYYY-MM-DD format.",
+    )
+
+    return parser.parse_args()
 
 
-evalscript = f"""
+def parse_analysis_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError(
+            "Date must use YYYY-MM-DD format."
+        ) from error
+
+
+def build_evalscript(pollutant: str) -> str:
+    return f"""
 //VERSION=3
 
 function setup() {{
     return {{
         input: [{{
-            bands: ["{POLLUTANT}", "dataMask"]
+            bands: ["{pollutant}", "dataMask"]
         }}],
         output: [
             {{
                 id: "default",
-                bands: ["{POLLUTANT}"],
+                bands: ["{pollutant}"],
                 sampleType: "FLOAT32"
             }},
             {{
@@ -44,7 +73,9 @@ function setup() {{
 }}
 
 function evaluatePixel(samples) {{
-    let validSamples = samples.filter(sample => sample.dataMask === 1);
+    let validSamples = samples.filter(
+        sample => sample.dataMask === 1
+    );
 
     if (validSamples.length === 0) {{
         return {{
@@ -55,12 +86,18 @@ function evaluatePixel(samples) {{
 
     let sum = 0;
 
-    for (let i = 0; i < validSamples.length; i++) {{
-        sum += validSamples[i].{POLLUTANT};
+    for (
+        let i = 0;
+        i < validSamples.length;
+        i++
+    ) {{
+        sum += validSamples[i].{pollutant};
     }}
 
     return {{
-        default: [sum / validSamples.length],
+        default: [
+            sum / validSamples.length
+        ],
         dataMask: [1]
     }};
 }}
@@ -68,18 +105,33 @@ function evaluatePixel(samples) {{
 
 
 def build_cells():
-    lon_step = (MAX_LON - MIN_LON) / GRID_SIZE
-    lat_step = (MAX_LAT - MIN_LAT) / GRID_SIZE
+    lon_step = (
+        MAX_LON - MIN_LON
+    ) / GRID_SIZE
+
+    lat_step = (
+        MAX_LAT - MIN_LAT
+    ) / GRID_SIZE
 
     cells = []
 
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
-            min_lon = MIN_LON + col * lon_step
-            max_lon = min_lon + lon_step
+            min_lon = (
+                MIN_LON + col * lon_step
+            )
 
-            min_lat = MIN_LAT + row * lat_step
-            max_lat = min_lat + lat_step
+            max_lon = (
+                min_lon + lon_step
+            )
+
+            min_lat = (
+                MIN_LAT + row * lat_step
+            )
+
+            max_lat = (
+                min_lat + lat_step
+            )
 
             cells.append(
                 {
@@ -97,7 +149,15 @@ def build_cells():
     return cells
 
 
-def get_cell_value(cell):
+def get_cell_value(
+    cell,
+    pollutant,
+    pollutant_config,
+    analysis_date,
+    next_date,
+    evalscript,
+    copernicus_client,
+):
     payload = {
         "input": {
             "bounds": {
@@ -107,15 +167,25 @@ def get_cell_value(cell):
                 {
                     "type": "sentinel-5p-l2",
                     "dataFilter": {
-                        "minQa": pollutant_config["min_qa"],
+                        "minQa": (
+                            pollutant_config[
+                                "min_qa"
+                            ]
+                        ),
                     },
                 }
             ],
         },
         "aggregation": {
             "timeRange": {
-                "from": f"{ANALYSIS_DATE}T00:00:00Z",
-                "to": "2026-05-10T00:00:00Z",
+                "from": (
+                    f"{analysis_date}"
+                    "T00:00:00Z"
+                ),
+                "to": (
+                    f"{next_date}"
+                    "T00:00:00Z"
+                ),
             },
             "aggregationInterval": {
                 "of": "P1D",
@@ -126,102 +196,187 @@ def get_cell_value(cell):
         },
     }
 
-    data = copernicus_client.get_statistics(payload)
+    data = (
+        copernicus_client
+        .get_statistics(payload)
+    )
 
     if not data.get("data"):
         return None
 
     stats = (
-        data["data"][0]["outputs"]["default"]["bands"][POLLUTANT]["stats"]
+        data["data"][0]
+        ["outputs"]["default"]
+        ["bands"][pollutant]["stats"]
     )
 
-    if stats["sampleCount"] == stats["noDataCount"]:
+    if (
+        stats["sampleCount"]
+        == stats["noDataCount"]
+    ):
         return None
 
     return stats["mean"]
 
 
-cells = build_cells()
-results = []
+def main():
+    args = parse_arguments()
 
-print(
-    f"Fetching {POLLUTANT} "
-    f"({pollutant_config['label']}) "
-    f"for {len(cells)} spatial cells..."
-)
-
-for index, cell in enumerate(cells, start=1):
-    value = get_cell_value(cell)
-
-    results.append(
-        {
-            **cell,
-            "value": value,
-        }
+    analysis_date_value = (
+        parse_analysis_date(args.date)
     )
 
-    if index % 8 == 0 or index == len(cells):
-        print(f"Processed {index}/{len(cells)} cells")
-
-
-output_file = (
-    f"stockholm_spatial_{POLLUTANT.lower()}_{ANALYSIS_DATE}.json"
-)
-
-with open(
-    output_file,
-    "w",
-    encoding="utf-8",
-) as file:
-    json.dump(results, file, indent=2)
-
-valid_results = [
-    result
-    for result in results
-    if result["value"] is not None
-]
-
-print()
-print(f"Valid cells: {len(valid_results)}/{len(results)}")
-
-if valid_results:
-    highest = max(
-        valid_results,
-        key=lambda result: result["value"],
+    analysis_date = (
+        analysis_date_value.isoformat()
     )
 
-    center_lon = (
-        highest["bbox"][0] + highest["bbox"][2]
-    ) / 2
+    next_date = (
+        analysis_date_value
+        + timedelta(days=1)
+    ).isoformat()
 
-    center_lat = (
-        highest["bbox"][1] + highest["bbox"][3]
-    ) / 2
+    pollutant = args.pollutant
+
+    pollutant_config = (
+        POLLUTANTS[pollutant]
+    )
+
+    copernicus_client = (
+        CopernicusClient()
+    )
+
+    evalscript = build_evalscript(
+        pollutant
+    )
+
+    cells = build_cells()
+    results = []
 
     print(
-        f"Highest {POLLUTANT}: "
-        f"{highest['value']:.2e} "
-        f"{pollutant_config['unit']}"
+        f"Fetching {pollutant} "
+        f"({pollutant_config['label']}) "
+        f"for {analysis_date} "
+        f"across {len(cells)} "
+        f"spatial cells..."
+    )
+
+    for index, cell in enumerate(
+        cells,
+        start=1,
+    ):
+        value = get_cell_value(
+            cell=cell,
+            pollutant=pollutant,
+            pollutant_config=(
+                pollutant_config
+            ),
+            analysis_date=analysis_date,
+            next_date=next_date,
+            evalscript=evalscript,
+            copernicus_client=(
+                copernicus_client
+            ),
+        )
+
+        results.append(
+            {
+                **cell,
+                "value": value,
+            }
+        )
+
+        if (
+            index % 8 == 0
+            or index == len(cells)
+        ):
+            print(
+                f"Processed "
+                f"{index}/{len(cells)} cells"
+            )
+
+    output_file = (
+        "stockholm_spatial_"
+        f"{pollutant.lower()}_"
+        f"{analysis_date}.json"
+    )
+
+    with open(
+        output_file,
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            results,
+            file,
+            indent=2,
+        )
+
+    valid_results = [
+        result
+        for result in results
+        if result["value"] is not None
+    ]
+
+    print()
+
+    print(
+        f"Valid cells: "
+        f"{len(valid_results)}/"
+        f"{len(results)}"
+    )
+
+    if valid_results:
+        highest = max(
+            valid_results,
+            key=lambda result: (
+                result["value"]
+            ),
+        )
+
+        center_lon = (
+            highest["bbox"][0]
+            + highest["bbox"][2]
+        ) / 2
+
+        center_lat = (
+            highest["bbox"][1]
+            + highest["bbox"][3]
+        ) / 2
+
+        print(
+            f"Highest {pollutant}: "
+            f"{highest['value']:.2e} "
+            f"{pollutant_config['unit']}"
+        )
+
+        print(
+            f"Highest cell: "
+            f"row={highest['row']} "
+            f"col={highest['col']}"
+        )
+
+        print(
+            "Approximate center: "
+            f"{center_lat:.4f}, "
+            f"{center_lon:.4f}"
+        )
+
+    print(
+        f"Saved {output_file}"
+    )
+
+    print()
+
+    print(
+        "Copernicus API requests: "
+        f"{copernicus_client.api_requests}"
     )
 
     print(
-        f"Highest cell: row={highest['row']} "
-        f"col={highest['col']}"
+        "Cache hits: "
+        f"{copernicus_client.cache_hits}"
     )
 
-    print(
-        f"Approximate center: "
-        f"{center_lat:.4f}, {center_lon:.4f}"
-    )
 
-print(f"Saved {output_file}")
-print()
-print(
-    f"Copernicus API requests: "
-    f"{copernicus_client.api_requests}"
-)
-
-print(
-    f"Cache hits: "
-    f"{copernicus_client.cache_hits}"
-)
+if __name__ == "__main__":
+    main()

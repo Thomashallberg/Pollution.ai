@@ -1,7 +1,7 @@
+import argparse
 import json
+from datetime import date
 from pathlib import Path
-
-import numpy as np
 
 from pollution_ai.analysis.spatial_anomaly_detector import (
     build_anomaly_result,
@@ -9,85 +9,62 @@ from pollution_ai.analysis.spatial_anomaly_detector import (
     find_strongest_spatial_anomaly,
 )
 from pollution_ai.config.pollutants import POLLUTANTS
-from pollution_ai.integrations.copernicus_client import CopernicusClient
 
 
-POLLUTANT = "CH4"
-pollutant_config = POLLUTANTS[POLLUTANT]
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build a spatial pollution anomaly result "
+            "using reusable baseline statistics."
+        )
+    )
 
-ANALYSIS_DATE = "2026-05-09"
+    parser.add_argument(
+        "--pollutant",
+        choices=POLLUTANTS.keys(),
+        required=True,
+        help="Pollutant to analyse.",
+    )
 
-SOURCE_FILE = (
-    f"stockholm_spatial_{POLLUTANT.lower()}_{ANALYSIS_DATE}.json"
-)
+    parser.add_argument(
+        "--date",
+        required=True,
+        help="Analysis date in YYYY-MM-DD format.",
+    )
 
-OUTPUT_FILE = Path(
-    f"stockholm_spatial_baseline_{POLLUTANT.lower()}.json"
-)
-
-BASELINE_FROM = "2026-05-01T00:00:00Z"
-BASELINE_TO = "2026-08-11T00:00:00Z"
-
-copernicus_client = CopernicusClient()
-
-
-evalscript = f"""
-//VERSION=3
-
-function setup() {{
-    return {{
-        input: [{{
-            bands: ["{POLLUTANT}", "dataMask"]
-        }}],
-        output: [
-            {{
-                id: "default",
-                bands: ["{POLLUTANT}"],
-                sampleType: "FLOAT32"
-            }},
-            {{
-                id: "dataMask",
-                bands: 1
-            }}
-        ],
-        mosaicking: "ORBIT"
-    }};
-}}
-
-function evaluatePixel(samples) {{
-    let validSamples = samples.filter(sample => sample.dataMask === 1);
-
-    if (validSamples.length === 0) {{
-        return {{
-            default: [0],
-            dataMask: [0]
-        }};
-    }}
-
-    let sum = 0;
-
-    for (let i = 0; i < validSamples.length; i++) {{
-        sum += validSamples[i].{POLLUTANT};
-    }}
-
-    return {{
-        default: [sum / validSamples.length],
-        dataMask: [1]
-    }};
-}}
-"""
+    return parser.parse_args()
 
 
-def load_existing_results():
-    if not OUTPUT_FILE.exists():
-        return []
+def parse_analysis_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError(
+            "Date must use YYYY-MM-DD format."
+        ) from error
 
-    with OUTPUT_FILE.open(encoding="utf-8") as file:
+
+def load_json(file_path: Path):
+    with file_path.open(
+        encoding="utf-8",
+    ) as file:
         return json.load(file)
 
 
-def save_results(results):
-    with OUTPUT_FILE.open(
+def load_existing_results(
+    output_file: Path,
+):
+    if not output_file.exists():
+        return []
+
+    return load_json(output_file)
+
+
+def save_results(
+    output_file: Path,
+    results,
+):
+    with output_file.open(
         "w",
         encoding="utf-8",
     ) as file:
@@ -98,192 +75,232 @@ def save_results(results):
         )
 
 
-def get_cell_history(cell):
-    payload = {
-        "input": {
-            "bounds": {
-                "bbox": cell["bbox"],
-            },
-            "data": [
-                {
-                    "type": "sentinel-5p-l2",
-                    "dataFilter": {
-                        "minQa": pollutant_config["min_qa"],
-                    },
-                }
-            ],
-        },
-        "aggregation": {
-            "timeRange": {
-                "from": BASELINE_FROM,
-                "to": BASELINE_TO,
-            },
-            "aggregationInterval": {
-                "of": "P1D",
-            },
-            "evalscript": evalscript,
-            "resx": 0.02,
-            "resy": 0.02,
-        },
+def build_baseline_lookup(
+    baseline_stats,
+):
+    return {
+        (
+            result["row"],
+            result["col"],
+        ): result
+        for result in baseline_stats
     }
 
-    data = copernicus_client.get_statistics(payload)
 
-    values = []
+def main():
+    args = parse_arguments()
 
-    for interval in data.get("data", []):
-        stats = (
-            interval["outputs"]["default"]
-            ["bands"][POLLUTANT]["stats"]
+    analysis_date = (
+        parse_analysis_date(
+            args.date
+        ).isoformat()
+    )
+
+    pollutant = args.pollutant
+    pollutant_config = POLLUTANTS[pollutant]
+
+    source_file = Path(
+        "stockholm_spatial_"
+        f"{pollutant.lower()}_"
+        f"{analysis_date}.json"
+    )
+
+    baseline_file = Path(
+        "stockholm_baseline_stats_"
+        f"{pollutant.lower()}.json"
+    )
+
+    output_file = Path(
+        "stockholm_spatial_baseline_"
+        f"{pollutant.lower()}_"
+        f"{analysis_date}.json"
+    )
+
+    if not source_file.exists():
+        raise FileNotFoundError(
+            "Spatial source data does not exist: "
+            f"{source_file}"
         )
 
-        if stats["sampleCount"] == stats["noDataCount"]:
+    if not baseline_file.exists():
+        raise FileNotFoundError(
+            "Baseline statistics do not exist: "
+            f"{baseline_file}"
+        )
+
+    spatial_cells = load_json(
+        source_file
+    )
+
+    baseline_stats = load_json(
+        baseline_file
+    )
+
+    baseline_lookup = build_baseline_lookup(
+        baseline_stats
+    )
+
+    results = load_existing_results(
+        output_file
+    )
+
+    completed_cells = {
+        (
+            result["row"],
+            result["col"],
+        )
+        for result in results
+    }
+
+    print(
+        f"Existing {pollutant} baseline cells: "
+        f"{len(completed_cells)}/"
+        f"{len(spatial_cells)}"
+    )
+
+    for cell in spatial_cells:
+        key = (
+            cell["row"],
+            cell["col"],
+        )
+
+        if key in completed_cells:
             continue
 
-        values.append(stats["mean"])
-
-    return values
-
-
-with open(SOURCE_FILE, encoding="utf-8") as file:
-    spatial_cells = json.load(file)
-
-
-results = load_existing_results()
-
-completed_cells = {
-    (result["row"], result["col"])
-    for result in results
-}
-
-print(
-    f"Existing {POLLUTANT} baseline cells: "
-    f"{len(completed_cells)}/{len(spatial_cells)}"
-)
-
-
-for cell in spatial_cells:
-    key = (cell["row"], cell["col"])
-
-    if key in completed_cells:
-        continue
-
-    history = get_cell_history(cell)
-    observed = cell["value"]
-
-    if history:
-        values = np.array(
-            history,
-            dtype=float,
+        baseline = baseline_lookup.get(
+            key
         )
 
-        mean = float(np.mean(values))
-        std = float(np.std(values))
+        observed = cell["value"]
 
-        z_score = calculate_spatial_z_score(
-            observed,
-            mean,
-            std,
+        if baseline is None:
+            result = {
+                "row": cell["row"],
+                "col": cell["col"],
+                "bbox": cell["bbox"],
+                "pollutant": pollutant,
+                "observed_value": observed,
+                "baseline_mean": None,
+                "baseline_std": None,
+                "valid_observations": 0,
+                "z_score": None,
+            }
+
+        else:
+            mean = baseline[
+                "baseline_mean"
+            ]
+
+            std = baseline[
+                "baseline_std"
+            ]
+
+            valid_observations = baseline[
+                "valid_observations"
+            ]
+
+            z_score = (
+                calculate_spatial_z_score(
+                    observed,
+                    mean,
+                    std,
+                )
+            )
+
+            result = {
+                "row": cell["row"],
+                "col": cell["col"],
+                "bbox": cell["bbox"],
+                "pollutant": pollutant,
+                "observed_value": observed,
+                "baseline_mean": mean,
+                "baseline_std": std,
+                "valid_observations": (
+                    valid_observations
+                ),
+                "z_score": z_score,
+            }
+
+        results.append(result)
+
+        save_results(
+            output_file=output_file,
+            results=results,
         )
 
-        result = {
-            "row": cell["row"],
-            "col": cell["col"],
-            "bbox": cell["bbox"],
-            "pollutant": POLLUTANT,
-            "observed_value": observed,
-            "baseline_mean": mean,
-            "baseline_std": std,
-            "valid_observations": len(values),
-            "z_score": z_score,
-        }
+        if (
+            len(results) % 8 == 0
+            or len(results)
+            == len(spatial_cells)
+        ):
+            print(
+                f"Processed "
+                f"{len(results)}/"
+                f"{len(spatial_cells)} cells"
+            )
 
-    else:
-        result = {
-            "row": cell["row"],
-            "col": cell["col"],
-            "bbox": cell["bbox"],
-            "pollutant": POLLUTANT,
-            "observed_value": observed,
-            "baseline_mean": None,
-            "baseline_std": None,
-            "valid_observations": 0,
-            "z_score": None,
-        }
+    valid_results = [
+        result
+        for result in results
+        if result["z_score"] is not None
+    ]
 
-    results.append(result)
-    save_results(results)
+    strongest = (
+        find_strongest_spatial_anomaly(
+            results
+        )
+    )
 
-    if (
-        len(results) % 8 == 0
-        or len(results) == len(spatial_cells)
-    ):
+    anomaly_result = build_anomaly_result(
+        strongest=strongest,
+        pollutant=pollutant,
+        date=analysis_date,
+        unit=pollutant_config["unit"],
+    )
+
+    print()
+
+    print(
+        f"Valid {pollutant} baseline cells: "
+        f"{len(valid_results)}/"
+        f"{len(results)}"
+    )
+
+    if anomaly_result is not None:
         print(
-            f"Processed "
-            f"{len(results)}/{len(spatial_cells)} cells"
+            f"Strongest {pollutant} "
+            f"spatial anomaly: "
+            f"row={strongest['row']} "
+            f"col={strongest['col']}"
         )
 
+        print(
+            f"Observed {pollutant}: "
+            f"{anomaly_result.observed_value:.2e} "
+            f"{anomaly_result.unit}"
+        )
 
-valid_results = [
-    result
-    for result in results
-    if result["z_score"] is not None
-]
+        print(
+            "Baseline mean: "
+            f"{anomaly_result.baseline_mean:.2e} "
+            f"{anomaly_result.unit}"
+        )
 
-strongest = find_strongest_spatial_anomaly(results)
+        print(
+            "Z-score: "
+            f"{anomaly_result.z_score:.2f}"
+        )
 
-anomaly_result = build_anomaly_result(
-    strongest=strongest,
-    pollutant=POLLUTANT,
-    date=ANALYSIS_DATE,
-    unit=pollutant_config["unit"],
-)
-
-print()
-print(
-    f"Valid {POLLUTANT} baseline cells: "
-    f"{len(valid_results)}/{len(results)}"
-)
-
-if anomaly_result is not None:
-    print(
-        f"Strongest {POLLUTANT} spatial anomaly: "
-        f"row={strongest['row']} "
-        f"col={strongest['col']}"
-    )
+        print(
+            "Approximate center: "
+            f"{anomaly_result.latitude:.4f}, "
+            f"{anomaly_result.longitude:.4f}"
+        )
 
     print(
-        f"Observed {POLLUTANT}: "
-        f"{anomaly_result.observed_value:.2e} "
-        f"{anomaly_result.unit}"
+        f"Saved {output_file}"
     )
 
-    print(
-        f"Baseline mean: "
-        f"{anomaly_result.baseline_mean:.2e} "
-        f"{anomaly_result.unit}"
-    )
 
-    print(
-        f"Z-score: "
-        f"{anomaly_result.z_score:.2f}"
-    )
-
-    print(
-        f"Approximate center: "
-        f"{anomaly_result.latitude:.4f}, "
-        f"{anomaly_result.longitude:.4f}"
-    )
-
-print(f"Saved {OUTPUT_FILE}")
-
-print()
-print(
-    f"Copernicus API requests: "
-    f"{copernicus_client.api_requests}"
-)
-
-print(
-    f"Cache hits: "
-    f"{copernicus_client.cache_hits}"
-)
+if __name__ == "__main__":
+    main()
