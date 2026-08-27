@@ -16,6 +16,8 @@ from pollution_ai.config.pollutants import POLLUTANTS
 GRID_SIZE = 8
 CELLS_PER_ANALYSIS = GRID_SIZE * GRID_SIZE
 
+MIN_VALID_CELLS = 10
+
 
 @dataclass
 class BackfillItem:
@@ -121,20 +123,31 @@ def get_analysis_file(
     )
 
 
-def has_valid_observations(
+def count_valid_observations(
     observation_file: Path,
-) -> bool:
+) -> int:
     if not observation_file.exists():
-        return False
+        return 0
 
     with observation_file.open(
         encoding="utf-8",
     ) as file:
         cells = json.load(file)
 
-    return any(
+    return sum(
         cell.get("value") is not None
         for cell in cells
+    )
+
+
+def has_sufficient_observations(
+    observation_file: Path,
+) -> bool:
+    return (
+        count_valid_observations(
+            observation_file
+        )
+        >= MIN_VALID_CELLS
     )
 
 
@@ -169,7 +182,7 @@ def build_backfill_plan(
             status = "SKIP"
 
         elif observation_file.exists():
-            if has_valid_observations(
+            if has_sufficient_observations(
                 observation_file
             ):
                 status = "ANALYSE"
@@ -198,12 +211,22 @@ def get_status_label(
         return "SKIP (complete)"
 
     if item.status == "ANALYSE":
-        return "ANALYSE (observation cached)"
+        return (
+            "ANALYSE "
+            "(sufficient observation coverage)"
+        )
 
     if item.status == "UNAVAILABLE":
+        valid_cells = (
+            count_valid_observations(
+                item.observation_file
+            )
+        )
+
         return (
             "UNAVAILABLE "
-            "(no valid observations)"
+            f"({valid_cells}/"
+            f"{CELLS_PER_ANALYSIS} valid cells)"
         )
 
     return "FETCH"
@@ -250,13 +273,28 @@ def execute_backfill_plan(
                 analysis_date=analysis_date,
             )
 
-            if not has_valid_observations(
-                item.observation_file
+            valid_cells = (
+                count_valid_observations(
+                    item.observation_file
+                )
+            )
+
+            if (
+                valid_cells
+                < MIN_VALID_CELLS
             ):
                 print(
-                    "No valid observations found. "
+                    "Insufficient satellite "
+                    "coverage: "
+                    f"{valid_cells}/"
+                    f"{CELLS_PER_ANALYSIS} "
+                    "valid cells."
+                )
+
+                print(
                     "Skipping analysis."
                 )
+
                 continue
 
         run_spatial_baseline(
@@ -307,6 +345,7 @@ def main():
     )
 
     print()
+
     print(
         f"Backfill plan: {pollutant}"
     )
@@ -324,6 +363,12 @@ def main():
         )
 
     print()
+
+    print(
+        "Minimum valid cells required: "
+        f"{MIN_VALID_CELLS}/"
+        f"{CELLS_PER_ANALYSIS}"
+    )
 
     print(
         "Days requiring observations: "
@@ -347,13 +392,16 @@ def main():
 
     if args.dry_run:
         print()
+
         print(
             "Dry run - no Copernicus "
             "requests made."
         )
+
         return
 
     print()
+
     print(
         "Executing backfill plan..."
     )
@@ -364,6 +412,7 @@ def main():
     )
 
     print()
+
     print(
         "Backfill complete."
     )

@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from pathlib import Path
 
@@ -6,7 +7,9 @@ import pytest
 from pollution_ai.analysis.backfill import (
     BackfillItem,
     CELLS_PER_ANALYSIS,
+    MIN_VALID_CELLS,
     build_backfill_plan,
+    count_valid_observations,
     execute_backfill_plan,
     get_analysis_file,
     get_observation_file,
@@ -90,6 +93,30 @@ def test_request_estimate_per_day():
     assert estimated_requests == 192
 
 
+def test_count_valid_observations(
+    tmp_path,
+):
+    observation_file = (
+        tmp_path
+        / "observations.json"
+    )
+
+    observation_file.write_text(
+        """
+[
+    {"value": 1.0},
+    {"value": null},
+    {"value": 2.0}
+]
+""".strip(),
+        encoding="utf-8",
+    )
+
+    assert count_valid_observations(
+        observation_file
+    ) == 2
+
+
 def test_build_backfill_plan_marks_complete_as_skip(
     tmp_path,
     monkeypatch,
@@ -126,22 +153,29 @@ def test_build_backfill_plan_marks_cached_observation_as_analyse(
         / "stockholm_spatial_ch4_2026-05-09.json"
     )
 
+    cells = [
+        {
+            "row": index,
+            "col": 0,
+            "bbox": [
+                17.6,
+                59.1,
+                17.7,
+                59.2,
+            ],
+            "value": (
+                1900.0
+                if index < MIN_VALID_CELLS
+                else None
+            ),
+        }
+        for index in range(
+            CELLS_PER_ANALYSIS
+        )
+    ]
+
     observation_file.write_text(
-        """
-[
-    {
-        "row": 0,
-        "col": 0,
-        "bbox": [
-            17.6,
-            59.1,
-            17.7,
-            59.2
-        ],
-        "value": 1900.0
-    }
-]
-""".strip(),
+        json.dumps(cells),
         encoding="utf-8",
     )
 
@@ -180,22 +214,25 @@ def test_build_backfill_plan_marks_empty_observation_as_unavailable(
         / "stockholm_spatial_ch4_2026-05-11.json"
     )
 
+    cells = [
+        {
+            "row": index,
+            "col": 0,
+            "bbox": [
+                17.6,
+                59.1,
+                17.7,
+                59.2,
+            ],
+            "value": None,
+        }
+        for index in range(
+            CELLS_PER_ANALYSIS
+        )
+    ]
+
     observation_file.write_text(
-        """
-[
-    {
-        "row": 0,
-        "col": 0,
-        "bbox": [
-            17.6,
-            59.1,
-            17.7,
-            59.2
-        ],
-        "value": null
-    }
-]
-""".strip(),
+        json.dumps(cells),
         encoding="utf-8",
     )
 
@@ -206,6 +243,113 @@ def test_build_backfill_plan_marks_empty_observation_as_unavailable(
     )
 
     assert plan[0].status == "UNAVAILABLE"
+
+
+def test_insufficient_coverage_is_unavailable(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+
+    observation_file = (
+        tmp_path
+        / "stockholm_spatial_ch4_2026-05-11.json"
+    )
+
+    cells = [
+        {
+            "row": index,
+            "col": 0,
+            "bbox": [
+                17.6,
+                59.1,
+                17.7,
+                59.2,
+            ],
+            "value": (
+                1900.0
+                if index
+                < MIN_VALID_CELLS - 1
+                else None
+            ),
+        }
+        for index in range(
+            CELLS_PER_ANALYSIS
+        )
+    ]
+
+    observation_file.write_text(
+        json.dumps(cells),
+        encoding="utf-8",
+    )
+
+    plan = build_backfill_plan(
+        pollutant="CH4",
+        from_date=date(2026, 5, 11),
+        to_date=date(2026, 5, 11),
+    )
+
+    assert (
+        count_valid_observations(
+            observation_file
+        )
+        == MIN_VALID_CELLS - 1
+    )
+
+    assert plan[0].status == "UNAVAILABLE"
+
+
+def test_minimum_coverage_is_analyse(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+
+    observation_file = (
+        tmp_path
+        / "stockholm_spatial_ch4_2026-05-11.json"
+    )
+
+    cells = [
+        {
+            "row": index,
+            "col": 0,
+            "bbox": [
+                17.6,
+                59.1,
+                17.7,
+                59.2,
+            ],
+            "value": (
+                1900.0
+                if index < MIN_VALID_CELLS
+                else None
+            ),
+        }
+        for index in range(
+            CELLS_PER_ANALYSIS
+        )
+    ]
+
+    observation_file.write_text(
+        json.dumps(cells),
+        encoding="utf-8",
+    )
+
+    plan = build_backfill_plan(
+        pollutant="CH4",
+        from_date=date(2026, 5, 11),
+        to_date=date(2026, 5, 11),
+    )
+
+    assert (
+        count_valid_observations(
+            observation_file
+        )
+        == MIN_VALID_CELLS
+    )
+
+    assert plan[0].status == "ANALYSE"
 
 
 def test_execute_backfill_plan_skips_complete(
@@ -350,10 +494,12 @@ def test_execute_backfill_plan_fetches_then_analyses(
 
     observation_file = (
         tmp_path
-        / "stockholm_spatial_ch4_2026-05-11.json"
+        / "stockholm_spatial_ch4_2026-05-12.json"
     )
 
-    def fake_spatial_analysis(**kwargs):
+    def fake_spatial_analysis(
+        **kwargs,
+    ):
         calls.append(
             (
                 "analysis",
@@ -361,26 +507,36 @@ def test_execute_backfill_plan_fetches_then_analyses(
             )
         )
 
+        cells = [
+            {
+                "row": index,
+                "col": 0,
+                "bbox": [
+                    17.6,
+                    59.1,
+                    17.7,
+                    59.2,
+                ],
+                "value": (
+                    1900.0
+                    if index
+                    < MIN_VALID_CELLS
+                    else None
+                ),
+            }
+            for index in range(
+                CELLS_PER_ANALYSIS
+            )
+        ]
+
         observation_file.write_text(
-            """
-[
-    {
-        "row": 0,
-        "col": 0,
-        "bbox": [
-            17.6,
-            59.1,
-            17.7,
-            59.2
-        ],
-        "value": 1900.0
-    }
-]
-""".strip(),
+            json.dumps(cells),
             encoding="utf-8",
         )
 
-    def fake_spatial_baseline(**kwargs):
+    def fake_spatial_baseline(
+        **kwargs,
+    ):
         calls.append(
             (
                 "baseline",
@@ -400,12 +556,16 @@ def test_execute_backfill_plan_fetches_then_analyses(
 
     plan = [
         BackfillItem(
-            analysis_date=date(2026, 5, 11),
+            analysis_date=date(
+                2026,
+                5,
+                12,
+            ),
             status="FETCH",
             observation_file=observation_file,
             analysis_file=(
                 tmp_path
-                / "stockholm_spatial_baseline_ch4_2026-05-11.json"
+                / "stockholm_spatial_baseline_ch4_2026-05-12.json"
             ),
         )
     ]
@@ -420,14 +580,14 @@ def test_execute_backfill_plan_fetches_then_analyses(
             "analysis",
             {
                 "pollutant": "CH4",
-                "analysis_date": "2026-05-11",
+                "analysis_date": "2026-05-12",
             },
         ),
         (
             "baseline",
             {
                 "pollutant": "CH4",
-                "analysis_date": "2026-05-11",
+                "analysis_date": "2026-05-12",
             },
         ),
     ]
