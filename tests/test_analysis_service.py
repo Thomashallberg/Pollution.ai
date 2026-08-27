@@ -122,3 +122,45 @@ def test_build_spatial_anomaly_response_returns_dict():
         "unit": "ppb",
         "severity": "high",
     }
+    
+def test_calculate_coverage():
+    results = [
+        {
+            "observed_value": 1.0,
+        },
+        {
+            "observed_value": None,
+        },
+        {
+            "observed_value": 2.0,
+        },
+        {
+            "observed_value": None,
+        },
+    ]
+
+    coverage = (
+        AnalysisService.calculate_coverage(
+            results
+        )
+    )
+
+    assert coverage == {
+        "valid_cells": 2,
+        "total_cells": 4,
+        "coverage_percent": 50.0,
+    }
+
+
+def test_calculate_coverage_handles_empty_results():
+    coverage = (
+        AnalysisService.calculate_coverage(
+            []
+        )
+    )
+
+    assert coverage == {
+        "valid_cells": 0,
+        "total_cells": 0,
+        "coverage_percent": 0.0,
+    }

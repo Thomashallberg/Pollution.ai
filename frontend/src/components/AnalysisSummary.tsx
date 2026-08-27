@@ -11,9 +11,16 @@ type SpatialCell = {
     severity: string | null
 }
 
+type Coverage = {
+    valid_cells: number
+    total_cells: number
+    coverage_percent: number
+}
+
 type AnalysisSummaryProps = {
     cells: SpatialCell[]
     pollutant: "CH4" | "NO2"
+    coverage: Coverage | null
 }
 
 
@@ -42,6 +49,7 @@ function getSeverityColor(
 function AnalysisSummary({
     cells,
     pollutant,
+    coverage,
 }: AnalysisSummaryProps) {
     const validCells = cells.filter(
         (cell) => cell.z_score !== null,
@@ -74,6 +82,7 @@ function AnalysisSummary({
             <div className="summary-heading">
                 <div>
                     <span>Analysis summary</span>
+
                     <h2>{pollutantLabel}</h2>
                 </div>
 
@@ -122,6 +131,22 @@ function AnalysisSummary({
                     <strong>
                         {strongest?.valid_observations ?? "N/A"}
                     </strong>
+                </div>
+
+                <div className="summary-card">
+                    <span>Satellite coverage</span>
+
+                    <strong>
+                        {coverage
+                            ? `${coverage.valid_cells} / ${coverage.total_cells}`
+                            : "N/A"}
+                    </strong>
+
+                    {coverage && (
+                        <small>
+                            {coverage.coverage_percent.toFixed(2)}%
+                        </small>
+                    )}
                 </div>
             </div>
         </section>

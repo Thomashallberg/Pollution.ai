@@ -22,6 +22,14 @@ type SpatialCell = {
   severity: string | null
 }
 
+type Coverage = {
+  pollutant: string
+  date: string
+  valid_cells: number
+  total_cells: number
+  coverage_percent: number
+}
+
 
 function App() {
   const [pollutant, setPollutant] =
@@ -36,6 +44,9 @@ function App() {
   const [cells, setCells] =
     useState<SpatialCell[]>([])
 
+  const [coverage, setCoverage] =
+    useState<Coverage | null>(null)
+
   const [error, setError] =
     useState<string | null>(null)
 
@@ -45,6 +56,7 @@ function App() {
       setAvailableDates([])
       setAnalysisDate("")
       setCells([])
+      setCoverage(null)
 
       try {
         const response = await fetch(
@@ -86,18 +98,31 @@ function App() {
       return
     }
 
-    const loadCells = async () => {
+    const loadAnalysis = async () => {
       setError(null)
+      setCoverage(null)
 
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/spatial/cells` +
-          `?pollutant=${pollutant}` +
-          `&date=${analysisDate}`,
-        )
+        const [
+          cellsResponse,
+          coverageResponse,
+        ] = await Promise.all([
+          fetch(
+            `http://127.0.0.1:8000/api/spatial/cells` +
+            `?pollutant=${pollutant}` +
+            `&date=${analysisDate}`,
+          ),
 
-        if (!response.ok) {
-          const data = await response.json()
+          fetch(
+            `http://127.0.0.1:8000/api/analysis/coverage` +
+            `?pollutant=${pollutant}` +
+            `&date=${analysisDate}`,
+          ),
+        ])
+
+        if (!cellsResponse.ok) {
+          const data =
+            await cellsResponse.json()
 
           throw new Error(
             data.detail ??
@@ -105,24 +130,39 @@ function App() {
           )
         }
 
-        const data: SpatialCell[] =
-          await response.json()
+        if (!coverageResponse.ok) {
+          const data =
+            await coverageResponse.json()
 
-        setCells(data)
+          throw new Error(
+            data.detail ??
+            "Failed to fetch analysis coverage",
+          )
+        }
+
+        const cellsData: SpatialCell[] =
+          await cellsResponse.json()
+
+        const coverageData: Coverage =
+          await coverageResponse.json()
+
+        setCells(cellsData)
+        setCoverage(coverageData)
       } catch (error) {
         setCells([])
+        setCoverage(null)
 
         if (error instanceof Error) {
           setError(error.message)
         } else {
           setError(
-            "Failed to fetch spatial cells",
+            "Failed to fetch analysis data",
           )
         }
       }
     }
 
-    loadCells()
+    loadAnalysis()
   }, [pollutant, analysisDate])
 
   return (
@@ -194,6 +234,7 @@ function App() {
             <AnalysisSummary
               cells={cells}
               pollutant={pollutant}
+              coverage={coverage}
             />
 
             <section className="map-panel">

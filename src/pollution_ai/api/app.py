@@ -1,15 +1,25 @@
 from datetime import date
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Query,
+)
+from fastapi.middleware.cors import (
+    CORSMiddleware,
+)
 
 from pollution_ai.api.schemas import (
     Pollutant,
     SpatialAnomalyResponse,
     SpatialCellResponse,
 )
-from pollution_ai.config.pollutants import POLLUTANTS
-from pollution_ai.services.analysis_service import AnalysisService
+from pollution_ai.config.pollutants import (
+    POLLUTANTS,
+)
+from pollution_ai.services.analysis_service import (
+    AnalysisService,
+)
 
 
 app = FastAPI(
@@ -38,9 +48,14 @@ def get_spatial_file_path(
     pollutant: Pollutant,
     analysis_date: date,
 ):
-    return AnalysisService.get_spatial_file_path(
-        pollutant=pollutant.value,
-        analysis_date=analysis_date.isoformat(),
+    return (
+        AnalysisService
+        .get_spatial_file_path(
+            pollutant=pollutant.value,
+            analysis_date=(
+                analysis_date.isoformat()
+            ),
+        )
     )
 
 
@@ -81,10 +96,38 @@ def get_available_analysis_dates(
 ):
     return {
         "dates": (
-            AnalysisService.get_available_analysis_dates(
+            AnalysisService
+            .get_available_analysis_dates(
                 pollutant.value
             )
         )
+    }
+
+
+@app.get("/api/analysis/coverage")
+def get_analysis_coverage(
+    pollutant: Pollutant = Query(
+        default=Pollutant.CH4,
+    ),
+    analysis_date: date = Query(
+        alias="date",
+    ),
+):
+    file_path = validate_spatial_file(
+        pollutant=pollutant,
+        analysis_date=analysis_date,
+    )
+
+    coverage = (
+        AnalysisService.load_coverage(
+            file_path=file_path,
+        )
+    )
+
+    return {
+        "pollutant": pollutant.value,
+        "date": analysis_date.isoformat(),
+        **coverage,
     }
 
 
@@ -101,18 +144,24 @@ def get_spatial_anomaly(
     ),
 ):
     pollutant_value = pollutant.value
-    pollutant_config = POLLUTANTS[pollutant_value]
+
+    pollutant_config = (
+        POLLUTANTS[pollutant_value]
+    )
 
     file_path = validate_spatial_file(
         pollutant=pollutant,
         analysis_date=analysis_date,
     )
 
-    return AnalysisService.load_spatial_anomaly_response(
-        file_path=file_path,
-        pollutant=pollutant_value,
-        date=analysis_date.isoformat(),
-        unit=pollutant_config["unit"],
+    return (
+        AnalysisService
+        .load_spatial_anomaly_response(
+            file_path=file_path,
+            pollutant=pollutant_value,
+            date=analysis_date.isoformat(),
+            unit=pollutant_config["unit"],
+        )
     )
 
 
@@ -133,6 +182,8 @@ def get_spatial_cells(
         analysis_date=analysis_date,
     )
 
-    return AnalysisService.load_spatial_cells(
-        file_path=file_path,
+    return (
+        AnalysisService.load_spatial_cells(
+            file_path=file_path,
+        )
     )

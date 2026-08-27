@@ -208,3 +208,37 @@ def test_get_available_no2_analysis_dates():
             "2026-05-10",
         ]
     }
+    
+def test_get_analysis_coverage():
+    response = client.get(
+        "/api/analysis/coverage"
+        "?pollutant=CH4"
+        "&date=2026-05-10"
+    )
+
+    assert response.status_code == 200
+
+    assert response.json() == {
+        "pollutant": "CH4",
+        "date": "2026-05-10",
+        "valid_cells": 19,
+        "total_cells": 64,
+        "coverage_percent": 29.69,
+    }
+
+
+def test_get_analysis_coverage_returns_404_for_missing_date():
+    response = client.get(
+        "/api/analysis/coverage"
+        "?pollutant=CH4"
+        "&date=2026-05-11"
+    )
+
+    assert response.status_code == 404
+
+    assert response.json() == {
+        "detail": (
+            "No cached analysis data available "
+            "for 2026-05-11."
+        )
+    }
